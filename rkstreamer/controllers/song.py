@@ -84,5 +84,5 @@ class JioSaavnSongController(ISongController):
     def uow_play_songs_remove_loaded(self, song: SongType):
         """UOW: Calls add queue with 'remove_loaded: true' &
         play the media"""
-        self.model.queue.add(song, remove_loaded=True)
+        self.model.queue.add(song, change_loaded=True)
         self.view.play_media(song)

@@ -98,13 +98,12 @@ class JioSaavnSongQueue(ISongQueue):
             self._indexed_queue.update(
                 {count: song})
 
-    def add(self, entity: SongType, remove_loaded: bool = False) -> bool:
+    def add(self, entity: SongType, change_loaded: bool = False) -> bool:
         """Add Song to Queue"""
-        if remove_loaded:
+        if change_loaded:
             for song in self.queue.songs:
                 if song.status == 'Loaded':
-                    self.queue.songs.remove(song)
-            self._normalize_queue_index()
+                    song.status = 'Played'
         if not self._check_media(entity):
             self.queue.songs.append(entity)
             self._normalize_queue_index()

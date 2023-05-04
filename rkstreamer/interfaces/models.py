@@ -21,7 +21,7 @@ class IQueue(ABC):
     """Interface for queue"""
 
     @abstractmethod
-    def add(self, entity, remove_loaded) -> bool:
+    def add(self, entity, change_loaded) -> bool:
         """Add entity to queue"""
 
     @abstractmethod
