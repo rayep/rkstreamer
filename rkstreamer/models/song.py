@@ -216,5 +216,5 @@ class JioSaavnSongQueue(ISongQueue):
             for song in rsongs:
                 if song not in self.rsongs_copy_:
                     self.rsongs_list.append(song)
-        self.rsongs_copy_.update(self.rsongs_list)
+        self.rsongs_copy_.update(rsongs)
         # SET: making a copy of all rsongs to avoid dups.
