@@ -21,8 +21,8 @@ class SongSearchCommand(Command):
         self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: str):
-        search_results = self.model.search_songs(user_input)
-        self.view.display_songs(search_results)
+        search_results = self.model.search(user_input)
+        self.view.display(search_results)
 
 
 class SongSelectCommand(Command):
@@ -34,10 +34,8 @@ class SongSelectCommand(Command):
         self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: int):
-        song = self.model.select_song(user_input)
-        self.model.queue.add_song(song)
-        self.view.play_media(song)
-        # self.controller.uow_get_rsongs(song.id)
+        song = self.model.select(user_input)
+        self.controller.uow_play_songs_remove_loaded(song)
 
 
 class SongQueueCommand(Command):
@@ -74,12 +72,11 @@ class SongQueueAddCommand(Command):
     def __init__(self, controller: SongControllerType):
         self.controller = controller
         self.model: SongModelType = self.controller.model
-        self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: str):
         user_input = list(user_input)
         for number in user_input:
-            song = self.model.select_song(number)
+            song = self.model.select(number)
             self.controller.uow_add_songs_queue(song)
 
 
@@ -92,7 +89,7 @@ class SongQueueRemoveCommand(Command):
         self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: int):
-        songs = self.model.queue.remove_song(user_input)
+        songs = self.model.queue.remove(user_input)
         for song in songs:
             self.view.remove_media(song)
 
@@ -106,9 +103,8 @@ class SongQueuePlayCommand(Command):
         self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: int):
-        song = self.model.queue.fetch_song(user_input)
+        song = self.model.queue.fetch(user_input)
         self.view.play_media(song)
-        # self.controller.uow_add_rsongs(song.id)
 
 
 class ReSongQueueCommand(Command):
@@ -127,7 +123,7 @@ class ReSongQueueCommand(Command):
     def execute(self, user_input: str):
         if user_input == '-r':
             queue = self.model.queue.get_rsongs
-            self.view.display_rsong_queue(queue)
+            self.view.display_rsongs_queue(queue)
         elif len(user_input) > 2:
             user_input = user_input.replace('-r', '')
             try:
@@ -151,7 +147,7 @@ class ReSongQueueAddCommand(Command):
         user_input = list(user_input)
         for number in user_input:
             rsong = self.model.queue.get_rsong_index(int(number))
-            rsong.stream_url = self.model.select_song_using_eurl(rsong.token)
+            rsong.stream_url = self.model.get_song(rsong.token)
             rsong.status = 'Loaded'
             self.controller.uow_add_songs_queue(rsong)
 
@@ -182,9 +178,9 @@ class ReSongQueuePlayCommand(Command):
     def execute(self, user_input: int):
         song = self.model.queue.get_rsong_index(int(user_input))
         if song:
-            song.stream_url = self.model.select_song_using_eurl(song.token)
-            self.model.queue.add_song(song)
-            self.view.play_media(song)
+            song.stream_url = self.model.get_song(song.token)
+            song.status = 'Loaded'
+            self.controller.uow_play_songs_remove_loaded(song)
 
 
 class PlayerControlsCommand(Command):

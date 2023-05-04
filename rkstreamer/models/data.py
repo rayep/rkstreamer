@@ -21,11 +21,15 @@ class Song(SongBase):
     token: str = None
     stream_url: str = None
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
 
 @dataclass
 class SongSearch(SongBase):
     """Song Search model'"""
     token: str = None
+
 
 @dataclass
 class SongQueue():

@@ -2,51 +2,95 @@
 DI module for domain models
 """
 
-from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
 from ._interface import ABC, abstractmethod
 
-if TYPE_CHECKING:
-    from rkstreamer.types import (
-        SongSearchIndexType,
-        SongType,
-        SongQueueType,
-        SongQueueIndexType)
 
-
-class ISongModel(ABC):
-    """Interface for Song"""
+class IModel(ABC):
+    """Interface for model"""
 
     @abstractmethod
-    def search_songs(self, search_string: str) -> SongSearchIndexType:
-        """Search songs"""
+    def search(self, search_string: str):
+        """Search item"""
 
     @abstractmethod
-    def select_song(self, song_number: int) -> Optional[SongType]:
-        """Select song"""
+    def select(self, selection: int):
+        """Select item"""
 
 
-class ISongQueue(ABC):
-    """Interface for song queue"""
-
-    @abstractmethod
-    def add_song(self, song: SongType) -> bool:
-        """Add song to queue"""
+class IQueue(ABC):
+    """Interface for queue"""
 
     @abstractmethod
-    def remove_song(self, index: int) -> list(SongType):
-        """Remove song from queue and updates the index"""
+    def add(self, entity, remove_loaded) -> bool:
+        """Add entity to queue"""
 
     @abstractmethod
-    def fetch_song(self, index: int) -> SongType:
-        """fetch song from queue index"""
+    def remove(self, index: int):
+        """Remove entity from queue and updates the index"""
+
+    @abstractmethod
+    def fetch(self, index: int):
+        """fetch entity from queue index"""
 
     @property
     @abstractmethod
-    def get_queue(self) -> SongQueueType:
-        """Returns the song queue"""
+    def get_queue(self):
+        """Returns the queue"""
 
     @property
     @abstractmethod
-    def get_indexed_queue(self) -> SongQueueIndexType:
-        """Returns the indexed song queue"""
+    def get_indexed_queue(self):
+        """Returns the indexed queue"""
+
+
+class ISongModel(IModel):
+    """Interface for Song model"""
+
+    @abstractmethod
+    def get_song(self, data):
+        """Get Song"""
+
+    @abstractmethod
+    def get_related_songs(self, data):
+        """Load related songs"""
+
+
+class ISongQueue(IQueue):
+    """Inferace for Song queue"""
+
+    @abstractmethod
+    def add_related_songs(self, songs):
+        """Add related songs to queue"""
+
+    @abstractmethod
+    def update_qstatus(self, status, stream_url):
+        """Update the main queue status"""
+
+    @abstractmethod
+    def pop_rsong(self):
+        """Get related song from Rqueue list"""
+
+    @abstractmethod
+    def get_rsong_index(self, index: int):
+        """Get related song by index"""
+
+    @abstractmethod
+    def remove_rsong_index(self, index: int):
+        """Remove related song by index"""
+
+    @abstractmethod
+    def update_rqueue(self, rsongs):
+        """Updates the related song queue"""
+
+    @property
+    @abstractmethod
+    def get_rsongs(self):
+        """Get rsongs list"""
+
+
+class IAlbumModel(IModel):
+    """Inferface for Album model"""
+
+
+class IAlbumQueue(IQueue):
+    """Interface for Album queue"""
