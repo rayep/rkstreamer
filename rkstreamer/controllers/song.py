@@ -68,7 +68,7 @@ class JioSaavnSongController(ISongController):
             if get_rsong:
                 get_rsong.stream_url = self.model.get_song(get_rsong.token)
                 self.uow_add_songs_queue(get_rsong)
-        threading.Timer(15, self.monitor_queue_pull_rsong).start()
+        threading.Timer(45, self.monitor_queue_pull_rsong).start()
 
     def uow_add_songs_queue(self, song: SongType):
         """UOW: Add songs to queue & media list. Doesn't play it"""

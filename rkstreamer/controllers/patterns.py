@@ -1,15 +1,18 @@
 """
 Design patterns implementation
 """
+
+import re
+from rkstreamer.interfaces.patterns import Command
+from rkstreamer.controllers.enums import SongQueueEnum
+from rkstreamer.models.exceptions import InvalidInput
+from rkstreamer.utils.helper import PATTERN
 from rkstreamer.types import (
     SongControllerType,
     SongModelType,
     SongViewType,
     CommandType
 )
-from rkstreamer.interfaces.patterns import Command
-from rkstreamer.controllers.enums import SongQueueEnum
-from rkstreamer.models.exceptions import InvalidInput
 
 
 class SongSearchCommand(Command):
@@ -21,7 +24,28 @@ class SongSearchCommand(Command):
         self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: str):
-        search_results = self.model.search(user_input)
+        match_input = re.match(PATTERN, user_input)
+        song = match_input.group('song')
+
+        lang = [match_input.group('lang'),] \
+            if match_input.group('lang') \
+            else ['tamil', 'english', 'hindi', 'telugu', 'kannada']
+
+        num = match_input.group('num') if match_input.group('num') else 3
+
+        bitrate = match_input.group('bitrate') \
+            if match_input.group('bitrate') \
+            else 160
+
+        rsongs = match_input.group(
+            'rsongs') if match_input.group('rsongs') else 10
+
+        search_results = self.model.search(
+            song,
+            lang=lang,
+            num=num,
+            bitrate=bitrate,
+            rsongs=rsongs)
         self.view.display(search_results)
 
 

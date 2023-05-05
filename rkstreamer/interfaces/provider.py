@@ -15,7 +15,7 @@ class ISongProvider(ABC):
     """Interface for song provider"""
 
     @abstractmethod
-    def search_songs(self, search_string: str) -> SongListRawType:
+    def search_songs(self, search_string: str, **kwargs) -> SongListRawType:
         """Search songs"""
 
     @abstractmethod
@@ -43,7 +43,7 @@ class IPlaylistProvider(ABC):
     """Interface for playlist provider"""
 
     @abstractmethod
-    def search_playlists(self, search_string: str):
+    def search_playlists(self, search_string: str, language: str):
         """Search albums"""
 
     @abstractmethod

@@ -38,10 +38,22 @@ class SongQueue():
 
 
 @dataclass
-class Playlist():
-    """Playlist model"""
+class PlaylistBase():
+    """Playlist base model"""
     name: str
+
+
+@dataclass
+class Playlist(PlaylistBase):
+    """Playlist model"""
     songs: field(default_factory=list)
+
+
+@dataclass
+class PlaylistSearch(PlaylistBase):
+    """Playlist search model"""
+    count: int = None
+    token: str = None
 
 
 @dataclass

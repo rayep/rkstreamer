@@ -9,11 +9,11 @@ class IModel(ABC):
     """Interface for model"""
 
     @abstractmethod
-    def search(self, search_string: str):
+    def search(self, search_string: str, **kwargs):
         """Search item"""
 
     @abstractmethod
-    def select(self, selection: int):
+    def select(self, selection: int, **kwargs):
         """Select item"""
 
 
@@ -94,3 +94,9 @@ class IAlbumModel(IModel):
 
 class IAlbumQueue(IQueue):
     """Interface for Album queue"""
+
+class IPlaylistModel(IModel):
+    """Interface for Playlist model"""
+
+class IPlaylistQueue(IQueue):
+    """Interface for Playlist queue"""

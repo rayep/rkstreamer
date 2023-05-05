@@ -48,17 +48,17 @@ class JioSaavnSongModel(ISongModel):
                 {count: self._create_search_song(**song)})
         return self.indexed_search_songs
 
-    def search(self, search_string: str) -> SongSearchIndexType:
+    def search(self, search_string: str, **kwargs) -> SongSearchIndexType:
         """Search Song using the search string and creates a Song Search data model"""
         search_result: SongListRawType = self.stream_provider.search_songs(
-            search_string)
+            search_string, **kwargs)
         return self._create_search_song_index(search_result)
 
-    def select(self, selection: int) -> Optional[SongType]:
+    def select(self, selection: int, **kwargs) -> Optional[SongType]:
         """Select Song from the Song Search Index and returns the selected Song"""
         selected_song = self.indexed_search_songs.get(int(selection))
         if selected_song:
-            song_url = self.stream_provider.select_song(selected_song.token)
+            song_url = self.stream_provider.select_song(selected_song.token, **kwargs)
             if song_url:
                 selected_song.__dict__.update({'stream_url': song_url})
                 selected_song.__dict__.update({'status': 'Loaded'})

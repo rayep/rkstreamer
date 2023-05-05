@@ -15,19 +15,19 @@ disable_warnings()  # Function to suppress the SSL Verification error.
 
 API_BASE = "https://www.jiosaavn.com/api.php"
 
-PARAMS_DEFAULT = {'api_version': '4', '_format': 'json', '_marker': 0,
+PARAMS_DEFAULT = {'api_version': 4, '_format': 'json', '_marker': 0,
                   'ctx': 'web6dot0'}
-PARAMS_FTEXT = {'api_version': '4', '_format': 'text', '_marker': 0,
+PARAMS_FTEXT = {'api_version': 4, '_format': 'text', '_marker': 0,
                 'ctx': 'web6dot0'}  # Format set to text for plist songs download.
 
-SONG_SEARCH = {'p': '1', 'q': '', 'n': 3, '__call': 'search.getResults'}
+SONG_SEARCH = {'p': 1, 'q': '', 'n': '', '__call': 'search.getResults'} # n - num of results.
 
-SONG_DOWNLOAD = {'__call': 'song.generateAuthToken', 'url': '', 'bitrate': 160}
+SONG_DOWNLOAD = {'__call': 'song.generateAuthToken', 'url': '', 'bitrate': ''} # enc_url, bitrate
 
 ENTITY_STATION = {'__call': 'webradio.createEntityStation', 'entity_id': '',
                   'entity_type': 'queue', 'freemium': '', 'shared': ''}
 
-RECOMM_SONGS = {'__call': 'webradio.getSong', 'stationid': '', 'k': 5}
+RECOMM_SONGS = {'__call': 'webradio.getSong', 'stationid': '', 'k': ''} # k - count of rsongs.
 
 PLIST_SEARCH = {'__call': 'search.getPlaylistResults', 'p': 1, 'q': ''}
 
@@ -41,26 +41,30 @@ class JioSaavnSongProvider(ISongProvider):
     def __init__(self, client: NetworkProviderType) -> None:
         self.client = client
 
-    def search_songs(self, search_string):
+    def search_songs(self, search_string: str, **kwargs):
         """Search songs using the search string"""
         SONG_SEARCH['q'] = quote_plus(search_string)
-        response = self.client.get(url=API_BASE, params=SONG_SEARCH | PARAMS_DEFAULT)
-        return self._parse_songs(response)
+        SONG_SEARCH['n'] = kwargs.get('num')
+        SONG_DOWNLOAD['bitrate'] = kwargs.get('bitrate')
+        RECOMM_SONGS['k'] = kwargs.get('rsongs')
+        response = self.client.get(
+            url=API_BASE, params=SONG_SEARCH|PARAMS_DEFAULT)
+        return self._parse_songs(response, lang=kwargs.get('lang'))
 
-    def _parse_songs(self, response: NetworkProviderResponseType) -> SongListRawType:
+    def _parse_songs(self, response: NetworkProviderResponseType, **kwargs) -> SongListRawType:
         """Parsing songs info from search songs call"""
         return [{'name': unescape(song['title']),
                 'id': song['id'],
-                 'album_name': unescape(song['more_info']['album']),
-                 'music': song['more_info']['music'],
-                 'artists': song['subtitle'].replace(f" - {song['more_info']['album']}", ''),
-                 'duration': song['more_info']['duration'],
-                 'token': song['more_info']['encrypted_media_url'],
-                 'album_id': song['more_info']['album_url'].split('/')[-1],
-                 'status': 'Fetched'}
-                for song in response.json()['results']]
+                    'album_name': unescape(song['more_info']['album']),
+                    'music': song['more_info']['music'],
+                    'artists': song['subtitle'].replace(f" - {song['more_info']['album']}", ''),
+                    'duration': song['more_info']['duration'],
+                    'token': song['more_info']['encrypted_media_url'],
+                    'album_id': song['more_info']['album_url'].split('/')[-1],
+                    'status': 'Fetched'}
+                for song in response.json()['results'] if song['language'] in kwargs.get('lang')]
 
-    def select_song(self, arg: str):
+    def select_song(self, arg: str, **kwargs):
         SONG_DOWNLOAD['url'] = arg  # Encrypted URL
         response = self.client.get(
             url=API_BASE, params=SONG_DOWNLOAD | PARAMS_DEFAULT)
@@ -91,7 +95,7 @@ class JioSaavnSongProvider(ISongProvider):
                  'status': 'Fetched'}
                 for key, song in response.json().items() if key != 'stationid']
 
-    def get_recomm_songs(self, song_id: str) -> SongListRawType:
+    def get_recomm_songs(self, song_id: str, **kwargs) -> SongListRawType:
         """Get recommended songs from song_id"""
         station_id = self._get_station_id(song_id)
         RECOMM_SONGS['stationid'] = station_id
