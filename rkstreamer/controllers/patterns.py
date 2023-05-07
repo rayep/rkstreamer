@@ -228,7 +228,10 @@ class ReSongQueueCommand(Command):
             try:
                 enum_obj = SongQueueEnum(user_input[0])
                 command: CommandType = self.commands.get(enum_obj)
-                if command:
+                if isinstance(command, ReSongQueueAddCommand):
+                    command.execute(user_input.replace(
+                        user_input[0], '').split(','))
+                else:
                     command.execute(user_input.replace(user_input[0], ''))
             except ValueError:
                 raise InvalidInput("Invalid Queue input provided") from None
@@ -243,7 +246,6 @@ class ReSongQueueAddCommand(Command):
         self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: str):
-        user_input = list(user_input)
         for number in user_input:
             rsong = self.model.queue.get_rsong_index(int(number))
             rsong.stream_url = self.model.get_song(rsong.token)

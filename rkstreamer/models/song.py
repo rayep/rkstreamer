@@ -73,8 +73,9 @@ class JioSaavnSongModel(ISongModel):
     def get_related_songs(self, data: str) -> list[SongType]:
         """Gets recommended songs using song_id and updates the RQueue"""
         recomm_songs_raw: SongListRawType = self.stream_provider.get_recomm_songs(data)
-        return list(map(self._create_recomm_song, recomm_songs_raw))
-
+        if recomm_songs_raw:
+            return list(map(self._create_recomm_song, recomm_songs_raw))
+        return None
 
 class JioSaavnSongQueue(ISongQueue):
     """Song queue implemented for Jio Saavn"""

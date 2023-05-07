@@ -79,7 +79,8 @@ class JioSaavnSongController(ISongController):
         """UOW: Add Recommended songs to RQueue
         :data - song_id"""
         recomm_songs = self.model.get_related_songs(data)
-        self.model.queue.update_rqueue(recomm_songs)
+        if recomm_songs:
+            self.model.queue.update_rqueue(recomm_songs)
 
     def uow_play_songs_remove_loaded(self, song: SongType):
         """UOW: Calls add queue with 'remove_loaded: true' &
