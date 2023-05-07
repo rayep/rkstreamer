@@ -1,5 +1,5 @@
 """
-View Implementation module
+Song view Implementation module
 """
 
 from typing import Callable
@@ -36,7 +36,7 @@ class JioSaavnSongView(ISongView):
     def display_rsongs_queue(self, queue: list[SongType]) -> None:
         """Displays the recommended songs queue"""
         for count, song in enumerate(queue):
-            print(f"#{count} - {song.name}")
+            print(f"#{count} - {song.name} - {song.artists}")
 
     def play_media(self, media: SongType) -> None:
         # print(f"\n\033[31m> Playing '{song.name}' <\033[0m\n ")

@@ -47,3 +47,11 @@ class ISongView(IView):
     @abstractmethod
     def set_controller_callback(self, callback_fn):
         """Updates the callback attribute to mlplayer's monitor state"""
+
+
+class IAlbumView(ISongView):
+    """Album View"""
+
+    @abstractmethod
+    def display_album_songs(self, entity):
+        """Display album songs"""

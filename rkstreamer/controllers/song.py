@@ -3,21 +3,21 @@
 import threading
 import re
 from typing import Union
-from rkstreamer.types import (
-    SongType,
-    SongModelType,
-    SongViewType,
-    CommandType
-)
 from rkstreamer.interfaces.controllers import ISongController
+from rkstreamer.utils.helper import parse_input
+from rkstreamer.controllers.enums import ControllerEnum
 from rkstreamer.controllers.patterns import (
     SongSearchCommand,
     SongSelectCommand,
     SongQueueCommand,
     ReSongQueueCommand,
     PlayerControlsCommand)
-from rkstreamer.utils.helper import parse_input
-from rkstreamer.controllers.enums import SongEnum
+from rkstreamer.types import (
+    SongType,
+    SongModelType,
+    SongViewType,
+    CommandType
+)
 
 
 class JioSaavnSongController(ISongController):
@@ -27,9 +27,9 @@ class JioSaavnSongController(ISongController):
         self.model = model
         self.view = view
         self.commands = {
-            SongEnum.QUEUE: SongQueueCommand(self),
-            SongEnum.CONTROLS: PlayerControlsCommand(self),
-            SongEnum.RQUEUE: ReSongQueueCommand(self),
+            ControllerEnum.QUEUE: SongQueueCommand(self),
+            ControllerEnum.CONTROLS: PlayerControlsCommand(self),
+            ControllerEnum.RQUEUE: ReSongQueueCommand(self),
             str: SongSearchCommand(self),
             int: SongSelectCommand(self),
         }
@@ -43,7 +43,7 @@ class JioSaavnSongController(ISongController):
         if user_input.startswith('-'):
             re_match = re.match(r'(-\w{1})', user_input)
             try:
-                enum_obj = SongEnum(re_match.group(1))
+                enum_obj = ControllerEnum(re_match.group(1))
                 command: CommandType = self.commands.get(enum_obj)
                 command.execute(user_input)
             except (ValueError, AttributeError):
@@ -58,7 +58,7 @@ class JioSaavnSongController(ISongController):
         if the song has been selected to play from search or from queue
         This function fetchs the rsongs for the playing song and updates rsong list."""
         song = self.model.queue.update_qstatus(status, stream_url)
-        if song:
+        if song and len(self.model.queue.get_rsongs) <= 50:
             self.uow_add_rsongs_rqueue(song.id)
 
     def monitor_queue_pull_rsong(self):

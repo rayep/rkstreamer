@@ -2,39 +2,54 @@
 
 from ._model import dataclass, field
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class SongBase():
     """Base for song model"""
-    name: str
-    id: str = None
-    artists: str = None
-    music: str = None
-    album_name: str = None
-    album_id: str = None
-    duration: int = None
-    status: str = None
+    name: str = field(hash=True, compare=True)
+    id: str = field(hash=False, compare=False, default=None, repr=False)
+    artists: str = field(hash=False, compare=False, default=None)
+    music: str = field(hash=False, compare=False, default=None)
+    album_name: str = field(hash=False, compare=False, default=None)
+    album_id: str = field(hash=False, compare=False, default=None, repr=False)
+    duration: int = field(hash=False, compare=False, default=None, repr=False)
 
 
-@dataclass
-class Song(SongBase):
-    """Song model"""
-    token: str = None
-    stream_url: str = None
-
-    def __hash__(self) -> int:
-        return hash(self.id)
-
-
-@dataclass
+@dataclass(unsafe_hash=True)
 class SongSearch(SongBase):
     """Song Search model'"""
-    token: str = None
+    status: str = field(hash=False, compare=False, default='Fetched', repr=False)
+    token: str = field(hash=False, compare=False, default=None, repr=False)
+
+
+@dataclass(unsafe_hash=True)
+class Song(SongSearch):
+    """Song model"""
+    stream_url: str = field(hash=False, compare=False, default=None)
 
 
 @dataclass
 class SongQueue():
     """Song Queue model"""
     songs: field(default_factory=list)
+
+
+@dataclass
+class AlbumBase():
+    """Album base model"""
+    name: str = field(hash=True, compare=True)
+    id: str = field(hash=False, compare=False, default=None, repr=False)
+    artists: str = field(hash=False, compare=False, default=None)
+    music: str = field(hash=False, compare=False, default=None)
+
+@dataclass
+class AlbumSearch(AlbumBase):
+    """Album search model"""
+    song_count: int = field(hash=False, default=None)
+
+@dataclass
+class Album(AlbumSearch):
+    """Album model"""
+    songs: list = field(default_factory=list)
 
 
 @dataclass
@@ -55,9 +70,3 @@ class PlaylistSearch(PlaylistBase):
     count: int = None
     token: str = None
 
-
-@dataclass
-class Album():
-    """Album model"""
-    name: str
-    songs: field(default_factory=list)

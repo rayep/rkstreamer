@@ -5,7 +5,7 @@ Models - Song
 from typing import Optional
 from rkstreamer.models.data import Song, SongSearch, SongQueue
 from rkstreamer.interfaces.models import ISongModel, ISongQueue
-from rkstreamer.services.provider import JioSaavnSongProvider
+from rkstreamer.services.song import JioSaavnSongProvider
 from rkstreamer.types import (
     SongListRawType,
     SongType,
@@ -66,15 +66,14 @@ class JioSaavnSongModel(ISongModel):
         raise InvalidInput("Invalid song selection input provided.")
 
     def get_song(self, data: str) -> str:
-        """Get the song's stream url using Enc Url Token"""
+        """Get the song's stream url using Enc Url Token - used for rsongs download"""
         stream_url = self.stream_provider.select_song(data)
         return stream_url
 
     def get_related_songs(self, data: str) -> list[SongType]:
         """Gets recommended songs using song_id and updates the RQueue"""
         recomm_songs_raw: SongListRawType = self.stream_provider.get_recomm_songs(data)
-        rsongs_list = set(map(self._create_recomm_song, recomm_songs_raw))
-        return rsongs_list
+        return list(map(self._create_recomm_song, recomm_songs_raw))
 
 
 class JioSaavnSongQueue(ISongQueue):
@@ -160,6 +159,7 @@ class JioSaavnSongQueue(ISongQueue):
 
     @property
     def get_queue(self) -> SongQueueType:
+        """returns song queue"""
         return self.queue
 
     @property

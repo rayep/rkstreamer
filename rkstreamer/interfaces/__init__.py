@@ -8,6 +8,7 @@ from .views import *
 from .network import *
 from .patterns import *
 from .player import *
+from .provider import *
 
 # from .models import IModel, IQueue, ISongQueue
 # from .controllers import ISongController

@@ -11,7 +11,7 @@ class CommandEnum(Enum):
     CHART = '-c'
 
 
-class SongEnum(Enum):
+class ControllerEnum(Enum):
     """Song enums"""
     SEARCH = str
     SELECT = int

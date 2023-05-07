@@ -91,6 +91,10 @@ class ISongQueue(IQueue):
 class IAlbumModel(IModel):
     """Inferface for Album model"""
 
+    @abstractmethod
+    def select_song_from_album(self, selection: int):
+        """Select song from album"""
+
 
 class IAlbumQueue(IQueue):
     """Interface for Album queue"""

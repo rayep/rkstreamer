@@ -39,5 +39,5 @@ class ISongController(IController):
         from search or rsongs queue"""
 
 
-class IAlbumController(IController):
-    """Interface for Song controller"""
+class IAlbumController(ISongController):
+    """Interface for Album controller"""

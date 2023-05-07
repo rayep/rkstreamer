@@ -11,14 +11,15 @@ from rkstreamer.interfaces import (
     ISongModel,
     ISongQueue,
     IAlbumModel,
-    IAlbumQueue)
+    IAlbumQueue,
+    ISongProvider)
 
 # Interfaces
 
 SongModelType = NewType('ISongModel', ISongModel)
 SongQueueModelType = NewType('ISongQueue', ISongQueue)
-AlbumModelType = NewType('ISongModel', IAlbumModel)
-AlbumQueueModelType = NewType('ISongQueue', IAlbumQueue)
+AlbumModelType = NewType('IAlbumModel', IAlbumModel)
+AlbumQueueModelType = NewType('IAlbumQueue', IAlbumQueue)
 
 # Primitives
 
@@ -36,4 +37,4 @@ SongSearchIndexType = NewType('SongSearchIndex', dict[int,SongSearch])
 SongQueueType = NewType('SongQueue', SongQueue)
 SongQueueIndexType = NewType('SongQueueIndex', dict[int,SongQueue])
 
-
+SongProviderType = NewType("SongProvider", ISongProvider)
