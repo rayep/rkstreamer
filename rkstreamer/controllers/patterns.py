@@ -3,19 +3,79 @@ Design patterns implementation
 """
 
 import re
+import threading
+from typing import Union
+from rkstreamer.interfaces.controllers import ISongController
 from rkstreamer.interfaces.patterns import Command
 from rkstreamer.controllers.enums import SongQueueEnum
 from rkstreamer.models.exceptions import InvalidInput
 from rkstreamer.utils.helper import SONG_PATTERN, ALBUM_PATTERN
 from rkstreamer.types import (
     SongControllerType,
+    SongType,
     SongModelType,
     SongViewType,
     AlbumControllerType,
     AlbumModelType,
     AlbumViewType,
+    PlaylistControllerType,
+    PlaylistModelType,
+    PlaylistViewType,
     CommandType
 )
+
+
+class SongControllerUtils(ISongController):
+    """Generic controller utils for handling songs"""
+
+    def __init__(
+            self,
+            model: Union[SongModelType, AlbumModelType],
+            view: Union[SongViewType, AlbumViewType]) -> None:
+
+        self.model = model
+        self.view = view
+
+        self.view.set_controller_callback(self.uow_update_song_status)
+
+        _ = threading.Timer(30, self.monitor_queue_pull_rsong)
+        _.setDaemon(True)
+        _.start()
+
+    def uow_update_song_status(self, status: str, stream_url: str):
+        """Updating song status in queue to "Played"
+        if the song has been selected to play from search or from queue
+        This function fetchs the rsongs for the playing song and updates rsong list."""
+        song = self.model.queue.update_qstatus(status, stream_url)
+        if song and len(self.model.queue.get_rsongs) <= 50:
+            self.uow_add_rsongs_rqueue(song.id)
+
+    def monitor_queue_pull_rsong(self):
+        """Pull rsong by monitoring the queue songs status"""
+        if self.model.queue.check_status(self.model.queue.get_queue):
+            get_rsong = self.model.queue.pop_rsong()
+            if get_rsong:
+                get_rsong.stream_url = self.model.get_song(get_rsong.token)
+                self.uow_add_songs_queue(get_rsong)
+        threading.Timer(45, self.monitor_queue_pull_rsong).start()
+
+    def uow_add_songs_queue(self, song: SongType):
+        """UOW: Add songs to queue & media list. Doesn't play it"""
+        self.model.queue.add(song)
+        self.view.add_media(song)
+
+    def uow_add_rsongs_rqueue(self, data: str):
+        """UOW: Add Recommended songs to RQueue
+        :data - song_id"""
+        recomm_songs = self.model.get_related_songs(data)
+        if recomm_songs:
+            self.model.queue.update_rqueue(recomm_songs)
+
+    def uow_play_songs_remove_loaded(self, song: SongType):
+        """UOW: Calls add queue with 'remove_loaded: true' &
+        play the media"""
+        self.model.queue.change_loaded_status()
+        self.view.play_media(song)
 
 
 class AlbumSearchCommand(Command):
@@ -111,12 +171,8 @@ class SongQueueCommand(Command):
             try:
                 enum_obj = SongQueueEnum(user_input[0])
                 command: CommandType = self.commands.get(enum_obj)
-                if isinstance(command, SongQueueAddCommand):
-                    command.execute(user_input.replace(
+                command.execute(user_input.replace(
                         user_input[0], '').split(','))
-                else:
-                    command.execute(user_input.replace(
-                        user_input[0], ''))
             except ValueError:
                 raise InvalidInput("Invalid Queue input provided") from None
 
@@ -128,7 +184,7 @@ class SongQueueAddCommand(Command):
         self.controller = controller
         self.model: SongModelType = self.controller.model
 
-    def execute(self, user_input: str):
+    def execute(self, user_input: list):
         for number in user_input:
             song = self.model.select(int(number))
             self.controller.uow_add_songs_queue(song)
@@ -142,7 +198,7 @@ class SongQueueRemoveCommand(Command):
         self.model: SongModelType = self.controller.model
         self.view: SongViewType = self.controller.view
 
-    def execute(self, user_input: int):
+    def execute(self, user_input: list):
         songs = self.model.queue.remove(user_input)
         for song in songs:
             self.view.remove_media(song)
@@ -156,8 +212,8 @@ class SongQueuePlayCommand(Command):
         self.model: SongModelType = self.controller.model
         self.view: SongViewType = self.controller.view
 
-    def execute(self, user_input: int):
-        song = self.model.queue.fetch(user_input)
+    def execute(self, user_input: list):
+        song = self.model.queue.fetch(user_input[0])
         self.controller.uow_play_songs_remove_loaded(song)
 
 
@@ -183,12 +239,8 @@ class AlbumQueueCommand(Command):
             try:
                 enum_obj = SongQueueEnum(user_input[0])
                 command: CommandType = self.commands.get(enum_obj)
-                if isinstance(command, AlbumQueueAddCommand):
-                    command.execute(user_input.replace(
-                        user_input[0], '').split(','))
-                else:
-                    command.execute(user_input.replace(
-                        user_input[0], ''))
+                command.execute(user_input.replace(
+                    user_input[0], '').split(','))
             except ValueError:
                 raise InvalidInput("Invalid Queue input provided") from None
 
@@ -200,7 +252,7 @@ class AlbumQueueAddCommand(Command):
         self.controller = controller
         self.model: AlbumModelType = self.controller.model
 
-    def execute(self, user_input: str):
+    def execute(self, user_input: list):
         for number in user_input:
             song = self.model.select_song_from_album(int(number))
             self.controller.uow_add_songs_queue(song)
@@ -228,11 +280,8 @@ class ReSongQueueCommand(Command):
             try:
                 enum_obj = SongQueueEnum(user_input[0])
                 command: CommandType = self.commands.get(enum_obj)
-                if isinstance(command, ReSongQueueAddCommand):
-                    command.execute(user_input.replace(
+                command.execute(user_input.replace(
                         user_input[0], '').split(','))
-                else:
-                    command.execute(user_input.replace(user_input[0], ''))
             except ValueError:
                 raise InvalidInput("Invalid Queue input provided") from None
 
@@ -245,7 +294,7 @@ class ReSongQueueAddCommand(Command):
         self.model: SongModelType = self.controller.model
         self.view: SongViewType = self.controller.view
 
-    def execute(self, user_input: str):
+    def execute(self, user_input: list):
         for number in user_input:
             rsong = self.model.queue.get_rsong_index(int(number))
             rsong.stream_url = self.model.get_song(rsong.token)
@@ -261,11 +310,11 @@ class ReSongQueueRemoveCommand(Command):
         self.model: SongModelType = self.controller.model
         self.view: SongViewType = self.controller.view
 
-    def execute(self, user_input: str):
+    def execute(self, user_input: list):
         if len(user_input) > 1:
             print("*Only one song can be delete from RS queue!*")
         else:
-            self.model.queue.remove_rsong_index(int(user_input))
+            self.model.queue.remove_rsong_index(int(user_input[0]))
 
 
 class ReSongQueuePlayCommand(Command):
@@ -276,12 +325,38 @@ class ReSongQueuePlayCommand(Command):
         self.model: SongModelType = self.controller.model
         self.view: SongViewType = self.controller.view
 
-    def execute(self, user_input: int):
-        song = self.model.queue.get_rsong_index(int(user_input))
+    def execute(self, user_input: list):
+        song = self.model.queue.get_rsong_index(int(user_input[0]))
         if song:
             song.stream_url = self.model.get_song(song.token)
             song.status = 'Loaded'
             self.controller.uow_play_songs_remove_loaded(song)
+
+
+class PlaylistSelectCommand(Command):
+    """Playlist Select command implementation"""
+
+    def __init__(self, controller: PlaylistControllerType):
+        self.controller = controller
+        self.model: PlaylistModelType = self.controller.model
+        self.view: PlaylistViewType = self.controller.view
+
+    def execute(self, user_input: int):
+        playlist = self.model.select(user_input)
+        self.controller.uow_play_songs(playlist)
+
+
+class PlaylistSearchCommand(Command):
+    """Album Search"""
+
+    def __init__(self, controller: AlbumControllerType):
+        self.controller = controller
+        self.model: AlbumModelType = self.controller.model
+        self.view: AlbumViewType = self.controller.view
+
+    def execute(self, user_input: str):
+        search_results = self.model.search(user_input)
+        self.view.display(search_results)
 
 
 class PlayerControlsCommand(Command):

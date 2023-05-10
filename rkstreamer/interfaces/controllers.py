@@ -41,3 +41,15 @@ class ISongController(IController):
 
 class IAlbumController(ISongController):
     """Interface for Album controller"""
+
+
+class IPlaylistController(IController):
+    """Interface for Playlist controller"""
+
+    @abstractmethod
+    def uow_add_songs_queue(self, song):
+        """Add songs to queue"""
+
+    @abstractmethod
+    def uow_play_songs(self, song):
+        """sets media list and play"""

@@ -11,7 +11,7 @@ from rkstreamer.interfaces import (
     ISongModel,
     ISongQueue,
     IAlbumModel,
-    IAlbumQueue,
+    IPlaylistModel,
     ISongProvider)
 
 # Interfaces
@@ -19,7 +19,7 @@ from rkstreamer.interfaces import (
 SongModelType = NewType('ISongModel', ISongModel)
 SongQueueModelType = NewType('ISongQueue', ISongQueue)
 AlbumModelType = NewType('IAlbumModel', IAlbumModel)
-AlbumQueueModelType = NewType('IAlbumQueue', IAlbumQueue)
+PlaylistModelType = NewType('IPlaylistModel', IPlaylistModel)
 
 # Primitives
 

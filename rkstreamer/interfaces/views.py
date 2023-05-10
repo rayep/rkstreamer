@@ -55,3 +55,18 @@ class IAlbumView(ISongView):
     @abstractmethod
     def display_album_songs(self, entity):
         """Display album songs"""
+
+class IPlaylistView(ISongView):
+    """Playlist view"""
+
+    @abstractmethod
+    def display_playlist_songs(self, entity):
+        """Display playlist songs"""
+
+    @abstractmethod
+    def add_media_list(self, songs_list):
+        """Add songs list to player media list"""
+
+    @abstractmethod
+    def play(self):
+        """Play the media list"""

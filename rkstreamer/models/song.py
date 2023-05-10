@@ -58,7 +58,8 @@ class JioSaavnSongModel(ISongModel):
         """Select Song from the Song Search Index and returns the selected Song"""
         selected_song = self.indexed_search_songs.get(int(selection))
         if selected_song:
-            song_url = self.stream_provider.select_song(selected_song.token, **kwargs)
+            song_url = self.stream_provider.select_song(
+                selected_song.token, **kwargs)
             if song_url:
                 selected_song.__dict__.update({'stream_url': song_url})
                 selected_song.__dict__.update({'status': 'Loaded'})
@@ -72,10 +73,12 @@ class JioSaavnSongModel(ISongModel):
 
     def get_related_songs(self, data: str) -> list[SongType]:
         """Gets recommended songs using song_id and updates the RQueue"""
-        recomm_songs_raw: SongListRawType = self.stream_provider.get_recomm_songs(data)
+        recomm_songs_raw: SongListRawType = self.stream_provider.get_recomm_songs(
+            data)
         if recomm_songs_raw:
             return list(map(self._create_recomm_song, recomm_songs_raw))
         return None
+
 
 class JioSaavnSongQueue(ISongQueue):
     """Song queue implemented for Jio Saavn"""
@@ -94,16 +97,32 @@ class JioSaavnSongQueue(ISongQueue):
 
     def _normalize_queue_index(self) -> None:
         """Updates the queue with index"""
-        for count, song in enumerate(self.queue.songs,1):
+        for count, song in enumerate(self.queue.songs, 1):
             self._indexed_queue.update(
                 {count: song})
 
-    def add(self, entity: SongType, change_loaded: bool = False) -> bool:
+    def add_playlist(self, entity):
+        """Add playlist songs"""
+        for song in entity.songs:
+            if not self._check_media(song):
+                self.queue.songs.append(song)
+                self._normalize_queue_index()
+        print(f"\n\033[01m\033[32mAdded: '{entity.name}'\033[0m")
+        print()
+
+    def change_loaded_status(self):
+        """Change loaded status"""
+        for song in self.queue.songs:
+            if song.status == 'Loaded':
+                song.status = 'Played'
+
+    def flush_queue(self):
+        """Flushes the queue"""
+        self.queue.songs.clear()
+        self._normalize_queue_index()
+
+    def add(self, entity: SongType) -> bool:
         """Add Song to Queue"""
-        if change_loaded:
-            for song in self.queue.songs:
-                if song.status == 'Loaded':
-                    song.status = 'Played'
         if not self._check_media(entity):
             self.queue.songs.append(entity)
             self._normalize_queue_index()
@@ -118,18 +137,19 @@ class JioSaavnSongQueue(ISongQueue):
     def remove(self, index: int) -> list[SongType]:
         """Remove Songs by Index value"""
         removed_songs = []
-        for ind in list(index):
-            song = self.fetch(int(int(ind)))
+        for value in list(index):
+            song = self.fetch(value)
             if self._check_media(song):
                 self.queue.songs.remove(song)
-                self._indexed_queue.pop(int(ind))
+                self._indexed_queue.pop(int(value))
                 removed_songs.append(song)
                 print(f"\n\033[93mRemoved: '{song.name}'\033[0m")
                 print()
             else:
                 raise MediaNotFound("Media not found in queue to delete")
             if song in self._indexed_queue.values():
-                raise RemoveMediaError("Failed to remove media from queue index")
+                raise RemoveMediaError(
+                    "Failed to remove media from queue index")
         self._normalize_queue_index()
         return removed_songs
 
@@ -147,7 +167,7 @@ class JioSaavnSongQueue(ISongQueue):
             if not self._check_media(song):
                 self.queue.songs.append(song)
         for count, song in enumerate(self.queue.songs, queue_length+1):
-            self._indexed_queue.update({count:song})
+            self._indexed_queue.update({count: song})
 
     def update_qstatus(self, status: str, stream_url: str) -> None:
         """Update 'played' status for songs in Queue and returns Song object if it's successful"""
@@ -164,7 +184,7 @@ class JioSaavnSongQueue(ISongQueue):
         return self.queue
 
     @property
-    def get_indexed_queue(self) -> SongQueueIndexType :
+    def get_indexed_queue(self) -> SongQueueIndexType:
         """returns the indexed queue"""
         return self._indexed_queue
 

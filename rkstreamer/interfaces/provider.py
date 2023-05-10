@@ -25,7 +25,7 @@ class IAlbumProvider(ABC):
 
     @abstractmethod
     def select_album(self, arg: str, **kwargs):
-        """Select song"""
+        """Select album"""
 
 
 class IPlaylistProvider(ABC):
@@ -33,8 +33,8 @@ class IPlaylistProvider(ABC):
 
     @abstractmethod
     def search_playlists(self, search_string: str, **kwargs):
-        """Search albums"""
+        """Search playlists"""
 
     @abstractmethod
     def select_playlist(self, arg: int, **kwargs):
-        """Select song"""
+        """Select playlist"""

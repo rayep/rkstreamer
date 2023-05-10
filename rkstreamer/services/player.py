@@ -34,16 +34,10 @@ class PyVlcPlayerInstance(MusicPlayer):
             self.songs_list.append(media_url)
             self._set_new_media()
 
-    def add_medias(self, media_urls: list, no_check = False):
-        """Appends the new media from LIST to media_list.
-        if the no_check is false, then call the set_new_media that does the append part."""
-        if no_check:
-            self.media_list = self.instance.media_list_new(media_urls)
-            self.player.set_media_list(self.media_list)
-        else:
-            for url in media_urls:
-                self.add_media(url)
-            self._set_new_media()
+    def add_medias(self, media_urls: list):
+        """Appends the new media from LIST to media_list."""
+        self.media_list = self.instance.media_list_new(media_urls)
+        self.player.set_media_list(self.media_list)
 
     def remove_media(self, media_url: str):
         """Removes media from media list and sets the updated list"""

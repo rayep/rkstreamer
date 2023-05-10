@@ -7,7 +7,7 @@ from rkstreamer.views.album import JioSaavnAlbumView
 from rkstreamer.services.network import PyRequests
 
 proxy = {'https': 'http://127.0.0.1:8888'}
-pyrequests = PyRequests(proxy=proxy)
+pyrequests = PyRequests(proxy=None)
 
 test = JioSaavnAlbumController(
     model=JioSaavnAlbumModel(pyrequests),

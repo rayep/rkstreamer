@@ -30,7 +30,7 @@ class Song(SongSearch):
 @dataclass
 class SongQueue():
     """Song Queue model"""
-    songs: field(default_factory=list)
+    songs: list = field(default_factory=list)
 
 
 @dataclass
@@ -55,18 +55,16 @@ class Album(AlbumSearch):
 @dataclass
 class PlaylistBase():
     """Playlist base model"""
-    name: str
-
-
-@dataclass
-class Playlist(PlaylistBase):
-    """Playlist model"""
-    songs: field(default_factory=list)
-
+    name: str = field(hash=True, compare=True)
 
 @dataclass
 class PlaylistSearch(PlaylistBase):
     """Playlist search model"""
-    count: int = None
-    token: str = None
+    token: str = field(default=None, repr=False)
+    song_count: int = field(default=None)
 
+
+@dataclass
+class Playlist(PlaylistSearch):
+    """Playlist model"""
+    songs: dict = field(default_factory=dict)

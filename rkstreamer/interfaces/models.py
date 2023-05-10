@@ -21,7 +21,7 @@ class IQueue(ABC):
     """Interface for queue"""
 
     @abstractmethod
-    def add(self, entity, change_loaded) -> bool:
+    def add(self, entity) -> bool:
         """Add entity to queue"""
 
     @abstractmethod
@@ -96,11 +96,11 @@ class IAlbumModel(IModel):
         """Select song from album"""
 
 
-class IAlbumQueue(IQueue):
-    """Interface for Album queue"""
+# class IAlbumQueue(IQueue):
+#     """Interface for Album queue"""
 
 class IPlaylistModel(IModel):
     """Interface for Playlist model"""
 
-class IPlaylistQueue(IQueue):
-    """Interface for Playlist queue"""
+# class IPlaylistQueue(IQueue):
+#     """Interface for Playlist queue"""
