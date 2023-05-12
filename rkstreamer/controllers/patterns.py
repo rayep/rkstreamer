@@ -67,10 +67,15 @@ class ControllerUtils(ISongController):
             self.model.queue.update_rqueue(recomm_songs)
 
     def uow_play_songs_remove_loaded(self, song: SongType):
-        """UOW: Calls add queue with 'remove_loaded: true' &
-        play the media"""
+        """UOW: changes the queue status to played &
+        play the media - suitable for rsongs play"""
         self.model.queue.change_loaded_status()
         self.model.queue.add(song)
+        self.view.play_media(song)
+
+    def uow_play_songs_remove_loaded_before(self, song: SongType):
+        """UOW: changes the status of queue song to played (only those are before this song)"""
+        self.model.queue.change_loaded_status_before(song)
         self.view.play_media(song)
 
 
@@ -86,17 +91,18 @@ class GotoAlbumCommand(Command):
             GotoAlbumEnum.ADD: GotoAlbumAddCommand(self.controller),
             GotoAlbumEnum.PLAY: GotoAlbumPlayCommand(self.controller),
         }
+        self.current_album_id = ''
 
     def execute(self, user_input):
         if user_input == '-g':
             album_id = self._model.queue.current_playing_song.album_id
-            if album_id:
-                self.controller.goto_album_songs = self.model.select_album_using_id(
-                    album_id)
-                self.view.display_gotoalbum_songs(
-                    self.controller.goto_album_songs)
+            if self.current_album_id != album_id:
+                self.controller.goto_album_songs.clear() # flush dict before saving new songs.
+                self.controller.goto_album_songs = self.model.select_album_using_id(album_id)
+                self.current_album_id = album_id
+                self.view.display_gotoalbum_songs(self.controller.goto_album_songs)
             else:
-                print(">>>No Album-ID found<<<")
+                self.view.display_gotoalbum_songs(self.controller.goto_album_songs)
         elif len(user_input) > 2:
             user_input = user_input.replace('-g', '')
             try:

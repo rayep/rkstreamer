@@ -5,7 +5,11 @@ from typing import Union
 from rkstreamer.interfaces.patterns import Command
 from rkstreamer.controllers.enums import ControllerEnum
 from rkstreamer.controllers.queue import AlbumQueueCommand, ReSongQueueCommand
-from rkstreamer.controllers.patterns import ControllerUtils, PlayerControlsCommand
+from rkstreamer.controllers.patterns import (
+    ControllerUtils,
+    PlayerControlsCommand,
+    GotoAlbumCommand
+)
 from rkstreamer.utils.helper import parse_input
 from rkstreamer.utils.helper import ALBUM_PATTERN
 from rkstreamer.types import (
@@ -21,15 +25,18 @@ class JioSaavnAlbumController(ControllerUtils):
 
     def __init__(self, model: AlbumModelType, view: AlbumViewType) -> None:
         self.model = model
+        self.goto_album = model
         self.view = view
         self.commands = {
             ControllerEnum.QUEUE: AlbumQueueCommand(self),
             ControllerEnum.CONTROLS: PlayerControlsCommand(self),
             ControllerEnum.RQUEUE: ReSongQueueCommand(self),
+            ControllerEnum.GTALBUM: GotoAlbumCommand(self),
             'as': AlbumSongSelectCommand(self),
             str: AlbumSearchCommand(self),
             int: AlbumSelectCommand(self),
         }
+        self.goto_album_songs = {}
         super().__init__(model, view)
 
     def handle_input(self, user_input: Union[str, int]):

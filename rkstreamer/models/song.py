@@ -44,6 +44,7 @@ class JioSaavnSongModel(ISongModel):
         return SongSearch(**kwargs)
 
     def _create_search_song_index(self, songs: SongListRawType) -> SongSearchIndexType:
+        self.indexed_search_songs.clear()
         for count, song in enumerate(songs, 1):
             self.indexed_search_songs.update(
                 {count: self._create_search_song(**song)})
@@ -113,10 +114,19 @@ class JioSaavnSongQueue(ISongQueue):
         # print()
 
     def change_loaded_status(self):
-        """Change loaded status"""
+        """Change loaded status for all songs with 'loaded' status"""
         for song in self.queue.songs:
             if song.status == 'Loaded':
                 song.status = '\033[31mPlayed\033[0m'
+
+    def change_loaded_status_before(self, entity: SongType):
+        """Change loaded status for songs that before the called one."""
+        for song in self.queue.songs:
+            if entity == song:
+                break # loop until this song is found.
+            if song.status == 'Loaded':
+                song.status = '\033[31mPlayed\033[0m'
+                # change the status for all songs thats above this one.
 
     def flush_queue(self):
         """Flushes the queue"""

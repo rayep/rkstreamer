@@ -80,7 +80,7 @@ class SongQueuePlayCommand(Command):
 
     def execute(self, user_input: list):
         song = self.model.queue.fetch(user_input[0])
-        self.view.play_media(song)
+        self.controller.uow_play_songs_remove_loaded_before(song)
 
 
 class AlbumQueueCommand(Command):
