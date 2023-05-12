@@ -32,7 +32,6 @@ class JioSaavnSongModel(ISongModel):
         self.stream_provider = JioSaavnSongProvider(client=self.network_provider)
         self.queue: SongQueueModelType = JioSaavnSongQueue()
         self.indexed_search_songs: SongSearchIndexType = {}
-        self._search_songs = []
 
     def _create_song(self, **kwargs) -> SongType:
         return Song(**kwargs)

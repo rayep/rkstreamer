@@ -43,7 +43,7 @@ class JioSaavnAlbumModel(IAlbumModel):
         return self.indexed_search_albums
 
     def _create_album_song_index(self, albums):
-        self.indexed_search_albums.clear()
+        self.indexed_album_songs.clear()
         for count, album in enumerate(albums, 1):
             self.indexed_album_songs.update(
                 {count: self._create_album_song(**album)})

@@ -97,7 +97,7 @@ class GotoAlbumCommand(Command):
         if user_input == '-g':
             album_id = self._model.queue.current_playing_song.album_id
             if self.current_album_id != album_id:
-                self.controller.goto_album_songs.clear() # flush dict before saving new songs.
+                # self.controller.goto_album_songs.clear() # flush dict before saving new songs.
                 self.controller.goto_album_songs = self.model.select_album_using_id(album_id)
                 self.current_album_id = album_id
                 self.view.display_gotoalbum_songs(self.controller.goto_album_songs)
