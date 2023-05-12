@@ -84,6 +84,7 @@ class StateMachine:
     def __init__(self):
         self.states = {'song': song, 'album': album, 'plist': playlist}
         self.current_state = song
+        self.current_state_name = 'song'
 
     def trigger(self):
         """Triggers the state change or handle current state"""
@@ -93,10 +94,10 @@ class StateMachine:
                 raise SystemExit('Tata!')
             elif user_input.startswith("--"):
                 state_name = user_input[2:]
-                if state_name in self.states:
-                    # stop the playing instance.
-                    self.current_state.controller.view.stop()
+                if (state_name != self.current_state_name) and (state_name in self.states):
+                    self.current_state.controller.view.stop() # stop player when switching mode.
                     self.current_state = self.states[state_name]
+                    self.current_state_name = state_name
             else:
                 if user_input:
                     self.current_state.handle_input(user_input)
