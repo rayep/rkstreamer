@@ -177,10 +177,8 @@ class ReSongQueueRemoveCommand(Command):
         self.view: SongViewType = self.controller.view
 
     def execute(self, user_input: list):
-        if len(user_input) > 1:
-            print("*Only one song can be delete from RS queue!*")
-        else:
-            self.model.queue.remove_rsong_index(int(user_input[0]))
+        for index in user_input:
+            self.model.queue.remove_rsong_index(int(index))
 
 
 class ReSongQueuePlayCommand(Command):

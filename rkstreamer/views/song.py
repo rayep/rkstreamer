@@ -39,7 +39,7 @@ class JioSaavnSongView(ISongView):
     def display_rsongs_queue(self, queue: list[SongType]) -> None:
         """Displays the recommended songs queue"""
         print('\n\033[33m\033[01m***Recommended Songs***\033[0m\n')
-        for count, song in enumerate(queue):
+        for count, song in queue.items():
             print(f"#{count} - {song.name} - {song.artists}")
         print()
 
@@ -52,7 +52,7 @@ class JioSaavnSongView(ISongView):
         print()
 
     def play_media(self, media: SongType) -> None:
-        # print(f"\n\033[31m> Playing '{song.name}' <\033[0m\n ")
+        # print(f"\n\033[31m> Playing '{media.name}' <\033[0m\n ")
         return self.media_player.play_media(media.stream_url)
 
     def remove_media(self, media: SongType) -> None:

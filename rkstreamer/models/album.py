@@ -15,18 +15,21 @@ from rkstreamer.models.exceptions import (
     InvalidInput
 )
 
+
 class JioSaavnAlbumModel(IAlbumModel):
     """Album model implemented for Jio Saavn service"""
 
     def __init__(self, network_provider: NetworkProviderType) -> None:
         self.network_provider = network_provider
-        self.stream_provider = JioSaavnAlbumProvider(client=self.network_provider)
+        self.stream_provider = JioSaavnAlbumProvider(
+            client=self.network_provider)
         self.song_provider = JioSaavnSongProvider(client=self.network_provider)
         self.queue: SongQueueModelType = JioSaavnSongQueue()
         self.indexed_search_albums = {}
         self.indexed_album_songs = {}
+        self._recomm_song_index = 1
 
-    def _create_album_song(self, **kwargs):
+    def _create_song(self, **kwargs):
         return Song(**kwargs)
 
     def _create_search_album(self, **kwargs):
@@ -46,20 +49,28 @@ class JioSaavnAlbumModel(IAlbumModel):
         self.indexed_album_songs.clear()
         for count, album in enumerate(albums, 1):
             self.indexed_album_songs.update(
-                {count: self._create_album_song(**album)})
+                {count: self._create_song(**album)})
         return self.indexed_album_songs
 
-    def _create_recomm_song(self, args) -> SongType:
-        return Song(**args)
+    def _create_recomm_song(self, songs: SongListRawType) -> SongType:
+        recomm_songs = {}
+        _songs = [self._create_song(**song) for song in songs]
+        for song in _songs:
+            if song not in self.queue.rsongs_copy_:
+                recomm_songs.update({self._recomm_song_index: song})
+                self._recomm_song_index += 1
+        return recomm_songs
 
     def search(self, search_string: str, **kwargs):
-        search_result = self.stream_provider.search_albums(search_string, **kwargs)
+        search_result = self.stream_provider.search_albums(
+            search_string, **kwargs)
         return self._create_search_album_index(search_result)
 
     def select(self, selection: int, **kwargs):
         selected_album = self.indexed_search_albums.get(int(selection))
         if selected_album:
-            album_songs_raw = self.stream_provider.select_album(selected_album.id)
+            album_songs_raw = self.stream_provider.select_album(
+                selected_album.id, **kwargs)
             selected_album.__dict__.update(
                 {'songs': self._create_album_song_index(album_songs_raw)})
             return self._create_album(**selected_album.__dict__)
@@ -85,10 +96,9 @@ class JioSaavnAlbumModel(IAlbumModel):
 
     def get_related_songs(self, data: str) -> list[SongType]:
         """Gets recommended songs using song_id and updates the RQueue"""
-        recomm_songs_raw: SongListRawType = self.song_provider.get_recomm_songs(data)
-        if recomm_songs_raw:
-            return list(map(self._create_recomm_song, recomm_songs_raw))
-        return None
+        recomm_songs_raw: SongListRawType = self.song_provider.get_recomm_songs(
+            data)
+        return self._create_recomm_song(recomm_songs_raw)
 
     def get_song_url(self, data: str) -> str:
         """Get the song's stream url using Enc Url Token - used for rsongs download"""

@@ -29,18 +29,26 @@ class JioSaavnSongModel(ISongModel):
 
     def __init__(self, network_provider: NetworkProviderType) -> None:
         self.network_provider = network_provider
-        self.stream_provider = JioSaavnSongProvider(client=self.network_provider)
+        self.stream_provider = JioSaavnSongProvider(
+            client=self.network_provider)
         self.queue: SongQueueModelType = JioSaavnSongQueue()
         self.indexed_search_songs: SongSearchIndexType = {}
+        self._recomm_song_index = 1
 
     def _create_song(self, **kwargs) -> SongType:
         return Song(**kwargs)
 
-    def _create_recomm_song(self, args) -> SongType:
-        return Song(**args)
-
     def _create_search_song(self, **kwargs) -> SongSearchType:
         return SongSearch(**kwargs)
+
+    def _create_recomm_song(self, songs: SongListRawType) -> SongType:
+        recomm_songs = {}
+        _songs = [self._create_song(**song) for song in songs]
+        for song in _songs:
+            if song not in self.queue.rsongs_copy_:
+                recomm_songs.update({self._recomm_song_index: song})
+                self._recomm_song_index += 1
+        return recomm_songs
 
     def _create_search_song_index(self, songs: SongListRawType) -> SongSearchIndexType:
         self.indexed_search_songs.clear()
@@ -76,9 +84,7 @@ class JioSaavnSongModel(ISongModel):
         """Gets recommended songs using song_id and updates the RQueue"""
         recomm_songs_raw: SongListRawType = self.stream_provider.get_recomm_songs(
             data)
-        if recomm_songs_raw:
-            return list(map(self._create_recomm_song, recomm_songs_raw))
-        return None
+        return self._create_recomm_song(recomm_songs_raw)
 
 
 class JioSaavnSongQueue(ISongQueue):
@@ -88,8 +94,11 @@ class JioSaavnSongQueue(ISongQueue):
         self.queue: SongQueueType = SongQueue([])
         self._indexed_queue = {}
         self.rsongs_copy_ = set()
-        self.rsongs_list: list[SongType] = []
+        self.rsongs_list = {}
         self.current_playing_song = None
+
+    def _create_song(self, **kwargs) -> SongType:
+        return Song(**kwargs)
 
     def _check_media(self, song: SongType) -> bool:
         """Checks the presence of media"""
@@ -122,7 +131,7 @@ class JioSaavnSongQueue(ISongQueue):
         """Change loaded status for songs that before the called one."""
         for song in self.queue.songs:
             if entity == song:
-                break # loop until this song is found.
+                break  # loop until this song is found.
             if song.status == 'Loaded':
                 song.status = '\033[31mPlayed\033[0m'
                 # change the status for all songs thats above this one.
@@ -215,7 +224,9 @@ class JioSaavnSongQueue(ISongQueue):
         """Pop rsong from its queue and move it to main queue.
         Change the song status to 'Loaded'"""
         if self.rsongs_list:
-            rsong = self.rsongs_list.pop(0)
+            first_rsong = next(iter(self.rsongs_list))
+            rsong = self.rsongs_list.pop(first_rsong)
+            # rsong = self.rsongs_list.pop(0)
             rsong.status = 'Loaded'
             return rsong
         return None
@@ -245,11 +256,5 @@ class JioSaavnSongQueue(ISongQueue):
 
     def update_rqueue(self, rsongs: list[SongType]):
         """Update the rsongs list"""
-        if not self.rsongs_list:
-            self.rsongs_list.extend(rsongs)
-        else:
-            for song in rsongs:
-                if song not in self.rsongs_copy_:
-                    self.rsongs_list.append(song)
-        self.rsongs_copy_.update(rsongs)
-        # SET: making a copy of all rsongs to avoid dups.
+        self.rsongs_list.update(rsongs)
+        self.rsongs_copy_.update(rsongs.values())
