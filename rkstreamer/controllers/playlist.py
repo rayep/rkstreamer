@@ -2,17 +2,16 @@
 
 import re
 from typing import Union
-from rkstreamer.utils.helper import parse_input
+from rkstreamer.interfaces.patterns import Command
 from rkstreamer.interfaces.controllers import IController
 from rkstreamer.controllers.enums import ControllerEnum
-from rkstreamer.controllers.patterns import (
-    PlaylistSearchCommand,
-    PlaylistSelectCommand,
-    SongQueueCommand,
-    PlayerControlsCommand)
+from rkstreamer.controllers.patterns import PlayerControlsCommand
+from rkstreamer.controllers.queue import SongQueueCommand
+from rkstreamer.utils.helper import parse_input
 from rkstreamer.types import (
     PlaylistModelType,
     PlaylistViewType,
+    PlaylistControllerType,
     CommandType,
     SongType
 )
@@ -27,6 +26,7 @@ class JioSaavnPlaylistController(IController):
         self.commands = {
             ControllerEnum.QUEUE: SongQueueCommand(self),
             ControllerEnum.CONTROLS: PlayerControlsCommand(self),
+            ControllerEnum.PVIEW: PlaylistViewCommand(self),
             str: PlaylistSearchCommand(self),
             int: PlaylistSelectCommand(self),
         }
@@ -39,8 +39,8 @@ class JioSaavnPlaylistController(IController):
                 enum_obj = ControllerEnum(re_match.group(1))
                 command: CommandType = self.commands.get(enum_obj)
                 command.execute(user_input)
-            except (ValueError, AttributeError):
-                print("Invalid input. Please try again")
+            except (ValueError, AttributeError) as exc:
+                print(f"{exc.__class__, 'Invalid input. Please try again'}")
         else:
             input_type = type(parse_input(user_input))
             command: CommandType = self.commands.get(input_type)
@@ -61,10 +61,50 @@ class JioSaavnPlaylistController(IController):
     def uow_play_songs(self, playlist):
         """UOW: (override) play the songs"""
         self.view.stop()
-        self.model.queue.flush_queue() # clears the queue before setting the new list
+        self.model.queue.flush_queue()  # clears the queue before setting the new plist
         self.uow_add_songs_queue(playlist)
         self.view.play()
 
     def uow_play_songs_remove_loaded(self, song: SongType):
         """UOW: (override) play the media"""
         self.view.play_media(song)
+
+
+class PlaylistSelectCommand(Command):
+    """Playlist Select command implementation"""
+
+    def __init__(self, controller: PlaylistControllerType):
+        self.controller = controller
+        self.model: PlaylistModelType = self.controller.model
+        self.view: PlaylistViewType = self.controller.view
+
+    def execute(self, user_input: int):
+        playlist = self.model.select(user_input)
+        self.controller.uow_play_songs(playlist)
+
+
+class PlaylistSearchCommand(Command):
+    """Album Search"""
+
+    def __init__(self, controller: PlaylistControllerType):
+        self.controller = controller
+        self.model: PlaylistModelType = self.controller.model
+        self.view: PlaylistViewType = self.controller.view
+
+    def execute(self, user_input: str):
+        search_results = self.model.search(user_input)
+        self.view.display(search_results)
+
+
+class PlaylistViewCommand(Command):
+    """Album Search"""
+
+    def __init__(self, controller: PlaylistControllerType):
+        self.controller = controller
+        self.model: PlaylistModelType = self.controller.model
+        self.view: PlaylistViewType = self.controller.view
+
+    def execute(self, user_input: str):
+        user_input = user_input.strip('-v')
+        search_results = self.model.select(user_input, view=True)
+        self.view.display_playlist_songs(search_results)

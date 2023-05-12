@@ -47,8 +47,8 @@ class ISongModel(IModel):
     """Interface for Song model"""
 
     @abstractmethod
-    def get_song(self, data):
-        """Get Song"""
+    def get_song_url(self, data):
+        """Get Song stream url"""
 
     @abstractmethod
     def get_related_songs(self, data):

@@ -163,7 +163,7 @@ class ReSongQueueAddCommand(Command):
     def execute(self, user_input: list):
         for number in user_input:
             rsong = self.model.queue.get_rsong_index(int(number))
-            rsong.stream_url = self.model.get_song(rsong.token)
+            rsong.stream_url = self.model.get_song_url(rsong.token)
             rsong.status = 'Loaded'
             self.controller.uow_add_songs_queue(rsong)
 
@@ -194,6 +194,6 @@ class ReSongQueuePlayCommand(Command):
     def execute(self, user_input: list):
         song = self.model.queue.get_rsong_index(int(user_input[0]))
         if song:
-            song.stream_url = self.model.get_song(song.token)
+            song.stream_url = self.model.get_song_url(song.token)
             song.status = 'Loaded'
             self.controller.uow_play_songs_remove_loaded(song)

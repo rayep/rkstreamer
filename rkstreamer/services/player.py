@@ -36,7 +36,8 @@ class PyVlcPlayerInstance(MusicPlayer):
 
     def add_medias(self, media_urls: list):
         """Appends the new media from LIST to media_list."""
-        self.media_list = self.instance.media_list_new(media_urls)
+        self.songs_list = media_urls #this is required for play_media.
+        self.media_list = self.instance.media_list_new(self.songs_list)
         self.player.set_media_list(self.media_list)
 
     def remove_media(self, media_url: str):
@@ -304,7 +305,7 @@ class StateControls():
                 self.mplayer_controls.pause()
 
         elif self.input.lower() == 's':
-            print("Stopped\n")
+            print("Stopped")
             self.mplayer_controls.stop()
 
         elif (self.input.lower() == 'q' or self.input.lower() == 'e'):
@@ -411,7 +412,7 @@ class MonitorState():
     def manage(self):
         """Thread loop to monitor player status and update main song queue"""
         if self.controls.get_state() == State(3):
-            self.callback("Played", self.controls.get_song_url_from_player)
+            self.callback('\033[31mPlayed\033[0m', self.controls.get_song_url_from_player)
         threading.Timer(15, self.manage).start()
         # if self.controls.get_state() == State(4):
         # elif self.controls.get_state() == State(6):

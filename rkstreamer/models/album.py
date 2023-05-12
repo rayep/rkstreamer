@@ -19,8 +19,9 @@ class JioSaavnAlbumModel(IAlbumModel):
     """Album model implemented for Jio Saavn service"""
 
     def __init__(self, network_provider: NetworkProviderType) -> None:
-        self.stream_provider = JioSaavnAlbumProvider(client=network_provider)
-        self.song_provider = JioSaavnSongProvider(client=network_provider)
+        self.network_provider = network_provider
+        self.stream_provider = JioSaavnAlbumProvider(client=self.network_provider)
+        self.song_provider = JioSaavnSongProvider(client=self.network_provider)
         self.queue: SongQueueModelType = JioSaavnSongQueue()
         self.indexed_search_albums = {}
         self.indexed_album_songs = {}
@@ -44,7 +45,7 @@ class JioSaavnAlbumModel(IAlbumModel):
         for count, album in enumerate(albums, 1):
             self.indexed_album_songs.update(
                 {count: self._create_album_song(**album)})
-        # return self.indexed_album_songs
+        return self.indexed_album_songs
 
     def _create_recomm_song(self, args) -> SongType:
         return Song(**args)
@@ -57,10 +58,17 @@ class JioSaavnAlbumModel(IAlbumModel):
         selected_album = self.indexed_search_albums.get(int(selection))
         if selected_album:
             album_songs_raw = self.stream_provider.select_album(selected_album.id)
-            self._create_album_song_index(album_songs_raw)
-            selected_album.__dict__.update({'songs': self.indexed_album_songs})
+            selected_album.__dict__.update(
+                {'songs': self._create_album_song_index(album_songs_raw)})
             return self._create_album(**selected_album.__dict__)
         raise InvalidInput("Invalid album selection input provided.")
+
+    def select_album_using_id(self, album_id: str):
+        """Select album using ID"""
+        album_songs_raw = self.stream_provider.select_album_id(album_id)
+        album_songs_raw.update(
+            {'songs': self._create_album_song_index(album_songs_raw['songs'])})
+        return self._create_album(**album_songs_raw)
 
     def select_song_from_album(self, selection: int):
         """Selecting song from the album"""
@@ -80,7 +88,7 @@ class JioSaavnAlbumModel(IAlbumModel):
             return list(map(self._create_recomm_song, recomm_songs_raw))
         return None
 
-    def get_song(self, data: str) -> str:
+    def get_song_url(self, data: str) -> str:
         """Get the song's stream url using Enc Url Token - used for rsongs download"""
         stream_url = self.song_provider.select_song(data)
         return stream_url

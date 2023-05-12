@@ -50,7 +50,7 @@ class ControllerUtils(ISongController):
         if self.model.queue.check_status(self.model.queue.get_queue):
             get_rsong = self.model.queue.pop_rsong()
             if get_rsong:
-                get_rsong.stream_url = self.model.get_song(get_rsong.token)
+                get_rsong.stream_url = self.model.get_song_url(get_rsong.token)
                 self.uow_add_songs_queue(get_rsong)
         threading.Timer(45, self.monitor_queue_pull_rsong).start()
 
@@ -121,7 +121,7 @@ class GotoAlbumAddCommand(Command):
             album_song = self.controller.goto_album_songs.songs.get(
                 int(number))
             if album_song:
-                album_song.stream_url = self.model.get_song(album_song.token)
+                album_song.stream_url = self.model.get_song_url(album_song.token)
                 album_song.status = 'Loaded'
                 self.controller.uow_add_songs_queue(album_song)
 
@@ -139,7 +139,7 @@ class GotoAlbumPlayCommand(Command):
             album_song = self.controller.goto_album_songs.songs.get(
                 int(number))
             if album_song:
-                album_song.stream_url = self.model.get_song(album_song.token)
+                album_song.stream_url = self.model.get_song_url(album_song.token)
                 album_song.status = 'Loaded'
                 self.controller.uow_play_songs_remove_loaded(album_song)
 

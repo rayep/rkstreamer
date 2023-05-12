@@ -34,7 +34,7 @@ class JioSaavnAlbumProvider(IAlbumProvider):
         self.album_search['n'] = kwargs.get('num') or 3
         language = [kwargs.get('lang'),] \
             if kwargs.get('lang') \
-                else ['tamil', 'english', 'hindi', 'telugu', 'kannada', 'spanish', 'latin']
+            else ['tamil', 'english', 'hindi', 'telugu', 'kannada', 'spanish', 'latin']
         response = self.client.get(
             url=self.API_BASE, params=self.album_search | self.PARAMS_DEFAULT)
         return self._parse_albums(response, lang=language)
@@ -63,3 +63,17 @@ class JioSaavnAlbumProvider(IAlbumProvider):
                  'token': song['more_info']['encrypted_media_url'],
                  'album_id': song['more_info']['album_url'].split('/')[-1]}
                 for song in response.json()['list']]
+
+    def _parse_full_album(self, response: NetworkProviderResponseType):
+        album = response.json()
+        return {'name': unescape(album['title']),
+                'id': album['perma_url'].split('/')[-1],
+                'artists': unescape(album['subtitle']),
+                'songs': self._parse_album_songs(response)}
+
+    def select_album_id(self, album_id: str):
+        """Select album using ID"""
+        self.album_select['token'] = album_id
+        response = self.client.get(
+            url=self.API_BASE, params=self.album_select | self.PARAMS_DEFAULT)
+        return self._parse_full_album(response)

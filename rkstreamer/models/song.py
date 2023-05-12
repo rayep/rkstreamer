@@ -28,7 +28,8 @@ class JioSaavnSongModel(ISongModel):
     """Song model implemented for Jio Saavn Service"""
 
     def __init__(self, network_provider: NetworkProviderType) -> None:
-        self.stream_provider = JioSaavnSongProvider(client=network_provider)
+        self.network_provider = network_provider
+        self.stream_provider = JioSaavnSongProvider(client=self.network_provider)
         self.queue: SongQueueModelType = JioSaavnSongQueue()
         self.indexed_search_songs: SongSearchIndexType = {}
         self._search_songs = []
@@ -66,7 +67,7 @@ class JioSaavnSongModel(ISongModel):
                 return self._create_song(**selected_song.__dict__)
         raise InvalidInput("Invalid song selection input provided.")
 
-    def get_song(self, data: str) -> str:
+    def get_song_url(self, data: str) -> str:
         """Get the song's stream url using Enc Url Token - used for rsongs download"""
         stream_url = self.stream_provider.select_song(data)
         return stream_url
@@ -88,6 +89,7 @@ class JioSaavnSongQueue(ISongQueue):
         self._indexed_queue = {}
         self.rsongs_copy_ = set()
         self.rsongs_list: list[SongType] = []
+        self.current_playing_song = None
 
     def _check_media(self, song: SongType) -> bool:
         """Checks the presence of media"""
@@ -108,13 +110,13 @@ class JioSaavnSongQueue(ISongQueue):
                 self.queue.songs.append(song)
                 self._normalize_queue_index()
         print(f"\n\033[01m\033[32mAdded: '{entity.name}'\033[0m")
-        print()
+        # print()
 
     def change_loaded_status(self):
         """Change loaded status"""
         for song in self.queue.songs:
             if song.status == 'Loaded':
-                song.status = 'Played'
+                song.status = '\033[31mPlayed\033[0m'
 
     def flush_queue(self):
         """Flushes the queue"""
@@ -127,7 +129,7 @@ class JioSaavnSongQueue(ISongQueue):
             self.queue.songs.append(entity)
             self._normalize_queue_index()
             print(f"\n\033[01m\033[32mAdded: '{entity.name}'\033[0m")
-            print()
+            # print()
         if not self._check_media(entity):
             raise AddMediaError("Failed to add media to queue")
         if entity not in self._indexed_queue.values():
@@ -144,7 +146,7 @@ class JioSaavnSongQueue(ISongQueue):
                 self._indexed_queue.pop(int(value))
                 removed_songs.append(song)
                 print(f"\n\033[93mRemoved: '{song.name}'\033[0m")
-                print()
+                # print()
             else:
                 raise MediaNotFound("Media not found in queue to delete")
             if song in self._indexed_queue.values():
@@ -170,12 +172,15 @@ class JioSaavnSongQueue(ISongQueue):
             self._indexed_queue.update({count: song})
 
     def update_qstatus(self, status: str, stream_url: str) -> None:
-        """Update 'played' status for songs in Queue and returns Song object if it's successful"""
+        """Update 'played' status for songs in Queue and returns Song object if it's successful.
+        Also, Updates the current_playing_song attr."""
         for song in self.queue.songs:
-            if (stream_url == song.stream_url) and (song.status == 'Loaded'):
-                print(f"\n\033[31m>>> Playing '{song.name}' <<<\033[0m")
-                song.status = status
-                return song
+            if stream_url == song.stream_url:
+                self.current_playing_song = song
+                if song.status == 'Loaded':
+                    print(f"\n\033[31m>>> Playing '{song.name}' <<<\033[0m")
+                    song.status = status
+                    return song
         return None
 
     @property
@@ -191,7 +196,7 @@ class JioSaavnSongQueue(ISongQueue):
     def check_status(self, queue: SongQueueType):
         """Checks the queue status for 'played' songs"""
         for song in queue.songs:
-            if song.status == 'Played':
+            if song.status == '\033[31mPlayed\033[0m':
                 continue
             else:
                 return False

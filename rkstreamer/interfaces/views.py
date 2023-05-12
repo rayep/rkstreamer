@@ -16,6 +16,14 @@ class IView(ABC):
     def display_selected(self, entity):
         """Displays the entity"""
 
+    @abstractmethod
+    def play(self):
+        """Play the media list"""
+
+    @abstractmethod
+    def stop(self):
+        """stop the media list"""
+
 
 class ISongView(IView):
     """Interface for Song View"""
@@ -67,6 +75,3 @@ class IPlaylistView(ISongView):
     def add_media_list(self, songs_list):
         """Add songs list to player media list"""
 
-    @abstractmethod
-    def play(self):
-        """Play the media list"""

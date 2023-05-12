@@ -19,10 +19,17 @@ class ControllerEnum(Enum):
     CONTROLS = '-c'
     RQUEUE = '-r'
     GTALBUM = '-g'
+    PVIEW = '-v'
 
 
-class SongQueueEnum(Enum):
+class QueueEnum(Enum):
     """Song Queue Enum"""
     ADD = 'a'
     REMOVE = 'r'
+    PLAY = 'p'
+
+
+class GotoAlbumEnum(Enum):
+    """Goto Album Queue Enum"""
+    ADD = 'a'
     PLAY = 'p'

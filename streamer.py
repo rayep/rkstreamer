@@ -1,16 +1,23 @@
 """Tests: Display songs"""
 
-import re
-from rkstreamer.controllers.enums import CommandEnum
 from rkstreamer.services.player import PyVlcPlayer
-from rkstreamer.controllers import JioSaavnSongController, JioSaavnAlbumController
-from rkstreamer.models import JioSaavnSongModel, JioSaavnAlbumModel
-from rkstreamer.views import JioSaavnSongView, JioSaavnAlbumView
 from rkstreamer.services.network import PyRequests
-from rkstreamer.types import (
-    SongControllerType,
-    AlbumControllerType
+from rkstreamer.controllers import (
+    JioSaavnSongController,
+    JioSaavnAlbumController,
+    JioSaavnPlaylistController
 )
+from rkstreamer.models import (
+    JioSaavnSongModel,
+    JioSaavnAlbumModel,
+    JioSaavnPlaylistModel
+)
+from rkstreamer.views import (
+    JioSaavnSongView,
+    JioSaavnAlbumView,
+    JioSaavnPlaylistView
+)
+
 
 proxy = {'https': 'http://127.0.0.1:8888'}
 pyrequests = PyRequests(proxy=None)
@@ -25,80 +32,75 @@ album_controller = JioSaavnAlbumController(
     view=JioSaavnAlbumView(player=PyVlcPlayer())
 )
 
-print("""
-Welcome Ray!
+plist_controller = JioSaavnPlaylistController(
+    model=JioSaavnPlaylistModel(pyrequests),
+    view=JioSaavnPlaylistView(player=PyVlcPlayer())
+)
 
-Jio Saavn Streaming Service
+print(r"""
+
+*** RK Streamer ***
+
+@Powered by Jio Saavn
+
 """)
 
-controllers = {
-    '-s': song_controller,
-    '-a': album_controller
-}
+
+class State:
+    """State class"""
+
+    def __init__(self, name, prompt, controller):
+        self.name = name
+        self.prompt = prompt
+        self.controller = controller
+
+    def handle_input(self, user_input):
+        """Handle user input"""
+        self.controller.handle_input(user_input)
+
+
+song = State(
+    "song",
+    "Enter the song name: ",
+    song_controller
+)
+
+album = State(
+    "album",
+    "Enter the album name: ",
+    album_controller
+)
+
+playlist = State(
+    "plist",
+    "Enter the playlist name: ",
+    plist_controller
+)
+
 
 class StateMachine:
+    """State machine"""
+
     def __init__(self):
-        self.state = None
+        self.states = {'song': song, 'album': album, 'plist': playlist}
+        self.current_state = song
 
-    def start(self):
-        self.state = StartState()
-
-    def handle_input(self, user_input):
-        new_state = self.state.handle_input(user_input)
-        if new_state:
-            self.state = new_state
-
-class StartState:
-    def handle_input(self, user_input):
-        if user_input == '-s':
-            return SongState()
-        elif user_input == '-a':
-            return AlbumState()
-        else:
-            print("Invalid state")
-
-
-class SongState:
-    def handle_input(self, user_input):
-        # handle user input for song controller
-        if user_input == '-a':
-            return AlbumState()
-
-class AlbumState:
-    def handle_input(self, user_input):
-        # handle user input for album controller
-        if user_input == '-s':
-            return SongState()
-
-while True:
-
-    user_input = input("Enter a selection: ")
+    def trigger(self):
+        """Triggers the state change or handle current state"""
+        while True:
+            user_input = input(self.current_state.prompt)
+            if user_input.lower().startswith('-e'):
+                raise SystemExit('Tata!')
+            elif user_input.startswith("--"):
+                state_name = user_input[2:]
+                if state_name in self.states:
+                    # stop the playing instance.
+                    self.current_state.controller.view.stop()
+                    self.current_state = self.states[state_name]
+            else:
+                if user_input:
+                    self.current_state.handle_input(user_input)
 
 
-
-# class StreamHandler():
-#     """Stream handler class"""
-
-#     def __init__(self, song: SongControllerType, album: AlbumControllerType) -> None:
-#         self.song = song
-#         self.album = album
-#         self.commands = {
-#             '-s': song
-#         }
-
-#     def handle_input(self, user_input: str):
-#         """Handle the user input"""
-#         if user_input.startswith('-'):
-#             re_match = re.match(r'(-\w{1})', user_input)
-#             try:
-#                 enum_obj = CommandEnum(re_match.group(1))
-#                 command = self.commands.get(enum_obj)
-#                 command.handle_input(user_input)
-#             except (ValueError, AttributeError):
-#                 print("Invalid input. Please try again")
-
-
-# while True:
-#     user_input = input("Enter the song name: ")
-#     if user_input:
-#         test.handle_input(user_input)
+machine = StateMachine()
+machine.trigger()
