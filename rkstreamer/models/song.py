@@ -8,6 +8,8 @@ from rkstreamer.interfaces.models import ISongModel, ISongQueue
 from rkstreamer.services.song import JioSaavnSongProvider
 from rkstreamer.types import (
     SongListRawType,
+    SongListType,
+    SongIndexType,
     SongType,
     SongSearchType,
     SongSearchIndexType,
@@ -41,9 +43,9 @@ class JioSaavnSongModel(ISongModel):
     def _create_search_song(self, **kwargs) -> SongSearchType:
         return SongSearch(**kwargs)
 
-    def _create_recomm_song(self, songs: SongListRawType) -> SongType:
+    def _create_recomm_song(self, songs: SongListRawType) -> SongIndexType:
         recomm_songs = {}
-        _songs = [self._create_song(**song) for song in songs]
+        _songs: SongListType = [self._create_song(**song) for song in songs]
         for song in _songs:
             if song not in self.queue.rsongs_copy_:
                 recomm_songs.update({self._recomm_song_index: song})
@@ -51,10 +53,8 @@ class JioSaavnSongModel(ISongModel):
         return recomm_songs
 
     def _create_search_song_index(self, songs: SongListRawType) -> SongSearchIndexType:
-        self.indexed_search_songs.clear()
-        for count, song in enumerate(songs, 1):
-            self.indexed_search_songs.update(
-                {count: self._create_search_song(**song)})
+        self.indexed_search_songs = {count: self._create_search_song(**song) 
+                                     for count, song in enumerate(songs, 1)}
         return self.indexed_search_songs
 
     def search(self, search_string: str, **kwargs) -> SongSearchIndexType:
@@ -80,7 +80,7 @@ class JioSaavnSongModel(ISongModel):
         stream_url = self.stream_provider.select_song(data)
         return stream_url
 
-    def get_related_songs(self, data: str) -> list[SongType]:
+    def get_related_songs(self, data: str) -> SongIndexType:
         """Gets recommended songs using song_id and updates the RQueue"""
         recomm_songs_raw: SongListRawType = self.stream_provider.get_recomm_songs(
             data)
@@ -108,11 +108,9 @@ class JioSaavnSongQueue(ISongQueue):
 
     def _normalize_queue_index(self) -> None:
         """Updates the queue with index"""
-        for count, song in enumerate(self.queue.songs, 1):
-            self._indexed_queue.update(
-                {count: song})
+        self._indexed_queue = dict(enumerate(self.queue.songs, 1))
 
-    def add_playlist(self, entity):
+    def add_playlist(self, entity: SongType) -> None:
         """Add playlist songs"""
         for song in entity.songs:
             if not self._check_media(song):
@@ -121,13 +119,13 @@ class JioSaavnSongQueue(ISongQueue):
         print(f"\n\033[01m\033[32mAdded: '{entity.name}'\033[0m")
         # print()
 
-    def change_loaded_status(self):
+    def change_loaded_status(self) -> None:
         """Change loaded status for all songs with 'loaded' status"""
         for song in self.queue.songs:
             if song.status == 'Loaded':
                 song.status = '\033[31mPlayed\033[0m'
 
-    def change_loaded_status_before(self, entity: SongType):
+    def change_loaded_status_before(self, entity: SongType) -> None:
         """Change loaded status for songs that before the called one."""
         for song in self.queue.songs:
             if entity == song:
@@ -136,12 +134,12 @@ class JioSaavnSongQueue(ISongQueue):
                 song.status = '\033[31mPlayed\033[0m'
                 # change the status for all songs thats above this one.
 
-    def flush_queue(self):
+    def flush_queue(self) -> None:
         """Flushes the queue"""
         self.queue.songs.clear()
         self._normalize_queue_index()
 
-    def add(self, entity: SongType) -> bool:
+    def add(self, entity: SongType) -> None:
         """Add Song to Queue"""
         if not self._check_media(entity):
             self.queue.songs.append(entity)
@@ -152,9 +150,8 @@ class JioSaavnSongQueue(ISongQueue):
             raise AddMediaError("Failed to add media to queue")
         if entity not in self._indexed_queue.values():
             raise AddMediaError("Failed to add media to queue index")
-        return True
 
-    def remove(self, index: int) -> list[SongType]:
+    def remove(self, index: int) -> SongListType:
         """Remove Songs by Index value"""
         removed_songs = []
         for value in list(index):
@@ -189,7 +186,7 @@ class JioSaavnSongQueue(ISongQueue):
         for count, song in enumerate(self.queue.songs, queue_length+1):
             self._indexed_queue.update({count: song})
 
-    def update_qstatus(self, status: str, stream_url: str) -> None:
+    def update_qstatus(self, status: str, stream_url: str) -> Optional[SongType]:
         """Update 'played' status for songs in Queue and returns Song object if it's successful.
         Also, Updates the current_playing_song attr."""
         for song in self.queue.songs:
@@ -211,7 +208,7 @@ class JioSaavnSongQueue(ISongQueue):
         """returns the indexed queue"""
         return self._indexed_queue
 
-    def check_status(self, queue: SongQueueType):
+    def check_status(self, queue: SongQueueType) -> bool:
         """Checks the queue status for 'played' songs"""
         for song in queue.songs:
             if song.status == '\033[31mPlayed\033[0m':
@@ -220,7 +217,7 @@ class JioSaavnSongQueue(ISongQueue):
                 return False
         return True
 
-    def pop_rsong(self):
+    def pop_rsong(self) -> Optional[SongType]:
         """Pop rsong from its queue and move it to main queue.
         Change the song status to 'Loaded'"""
         if self.rsongs_list:
@@ -240,7 +237,7 @@ class JioSaavnSongQueue(ISongQueue):
             print("Invalid RS Index!")
         return None
 
-    def remove_rsong_index(self, index: int) -> None:
+    def remove_rsong_index(self, index: int) -> Optional[SongType]:
         """Removes the RS song from its queue"""
         try:
             rsong = self.rsongs_list.pop(index)
@@ -250,11 +247,11 @@ class JioSaavnSongQueue(ISongQueue):
             print("Invalid RS Index!")
 
     @property
-    def get_rsongs(self):
+    def get_rsongs(self) -> SongIndexType:
         """Get the rsongs list"""
         return self.rsongs_list
 
-    def update_rqueue(self, rsongs: list[SongType]):
+    def update_rqueue(self, rsongs: SongIndexType):
         """Update the rsongs list"""
         self.rsongs_list.update(rsongs)
         self.rsongs_copy_.update(rsongs.values())

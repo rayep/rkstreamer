@@ -5,6 +5,9 @@ from rkstreamer.models.song import JioSaavnSongQueue
 from rkstreamer.interfaces.models import IPlaylistModel
 from rkstreamer.services.playlist import JioSaavnPlaylistProvider
 from rkstreamer.types import (
+    PlaylistType,
+    PlaylistSearchType,
+    PlaylistSearchIndexType,
     NetworkProviderType
 )
 from rkstreamer.models.exceptions import InvalidInput
@@ -20,24 +23,23 @@ class JioSaavnPlaylistModel(IPlaylistModel):
         self.indexed_playlists = {}
         self.playlist_songs = []
 
-    def _create_playlist(self, **kwargs):
+    def _create_playlist(self, **kwargs) -> PlaylistType:
         return Playlist(**kwargs)
 
-    def _create_search_playlist(self, **kwargs):
+    def _create_search_playlist(self, **kwargs) -> PlaylistSearchType:
         return PlaylistSearch(**kwargs)
 
-    def _create_search_playlist_index(self, playlists):
-        for count, playlist in enumerate(playlists, 1):
-            self.indexed_playlists.update(
-                {count: self._create_search_playlist(**playlist)})
+    def _create_search_playlist_index(self, playlists) -> PlaylistSearchIndexType:
+        self.indexed_playlists = {count: self._create_search_playlist(**playlist)
+                                  for count, playlist in enumerate(playlists, 1)}
         return self.indexed_playlists
 
-    def search(self, search_string: str, **kwargs):
+    def search(self, search_string: str, **kwargs) -> PlaylistSearchIndexType:
         response = self.stream_provider.search_playlists(
             search_string, **kwargs)
         return self._create_search_playlist_index(response)
 
-    def select(self, selection: int, **kwargs):
+    def select(self, selection: int, **kwargs) -> PlaylistType:
         selected_plist = self.indexed_playlists.get(int(selection))
         if selected_plist:
             plist_songs = self.stream_provider.select_playlist(
