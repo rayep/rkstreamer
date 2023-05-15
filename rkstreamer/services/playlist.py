@@ -11,6 +11,8 @@ from rkstreamer.interfaces.provider import IPlaylistProvider
 
 if TYPE_CHECKING:
     from rkstreamer.types import (
+        SongUrl,
+        PListRawType,
         NetworkProviderType,
         NetworkProviderResponseType
     )
@@ -36,7 +38,7 @@ class JioSaavnPlaylistProvider(IPlaylistProvider):
     def __init__(self, client: NetworkProviderType) -> None:
         self.client = client
 
-    def search_playlists(self, search_string: str, **kwargs):
+    def search_playlists(self, search_string: str, **kwargs) -> PListRawType:
         """Playlist search"""
         self.plist_search['q'] = search_string
         language = [kwargs.get('lang'),] \
@@ -46,7 +48,7 @@ class JioSaavnPlaylistProvider(IPlaylistProvider):
             url=self.API_BASE, params=self.plist_search | self.PARAMS_DEFAULT)
         return self._parse_playlist(plist_request, lang=language)
 
-    def _parse_playlist(self, response: NetworkProviderResponseType, **kwargs):
+    def _parse_playlist(self, response: NetworkProviderResponseType, **kwargs) -> PListRawType:
         """Parse playlist response"""
         return [{'name': plist['title'],
                 'token': plist['perma_url'].split('/')[-1],
@@ -54,13 +56,13 @@ class JioSaavnPlaylistProvider(IPlaylistProvider):
                 for plist in response.json()['results']
                 if plist['more_info']['language'] in kwargs.get('lang')]
 
-    def select_playlist(self, arg: str, **kwargs):
+    def select_playlist(self, arg: str, **kwargs) -> PListRawType:
         self.plist_download['token'] = arg
         plist_select = self.client.get(
             url=self.API_BASE, params=self.plist_download | self.PARAMS_FTEXT)
         return self._parse_playlist_songs(plist_select, **kwargs)
 
-    def _parse_playlist_songs(self, response: NetworkProviderResponseType, **kwargs):
+    def _parse_playlist_songs(self, response: NetworkProviderResponseType, **kwargs) -> PListRawType:
         """Parse songs from playlist selection"""
         if kwargs.get('view'):
             return [{'name': unescape(song['song_for_player'])}
@@ -70,7 +72,7 @@ class JioSaavnPlaylistProvider(IPlaylistProvider):
                 'stream_url': self._change_plist_song_url(song['download_url'])}
                 for song in response.json()['fullsongs']]
 
-    def _change_plist_song_url(self, song_url: str):
+    def _change_plist_song_url(self, song_url: str) -> SongUrl:
         """Change plist song urls with latest JS CDN host"""
         if 'SAR' in song_url:  # for handling URLs - https://h.saavncdn.com/*/SAR-*.mp3
             return song_url

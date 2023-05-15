@@ -10,5 +10,3 @@ from rkstreamer.interfaces import (
 SongViewType = NewType('ISongView', ISongView)
 AlbumViewType = NewType('IAlbumView', IAlbumView)
 PlaylistViewType = NewType('IPlaylistView', IPlaylistView)
-
-

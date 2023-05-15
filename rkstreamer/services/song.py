@@ -38,11 +38,11 @@ class JioSaavnSongProvider(ISongProvider):
     def __init__(self, client: NetworkProviderType) -> None:
         self.client = client
 
-    def search_songs(self, search_string: str, **kwargs):
+    def search_songs(self, search_string: str, **kwargs) -> SongListRawType:
         """Search songs using the search string"""
         self.song_search['q'] = quote_plus(search_string)
         self.song_search['n'] = kwargs.get('num') or 3
-        self.song_download['bitrate'] = kwargs.get('bitrate') or 160
+        self.song_download['bitrate'] = kwargs.get('bitrate') or 320
         language = [kwargs.get('lang'),] \
             if kwargs.get('lang') \
             else ['tamil', 'english', 'hindi', 'telugu', 'kannada', 'spanish', 'latin']
@@ -62,7 +62,7 @@ class JioSaavnSongProvider(ISongProvider):
                  'album_id': song['more_info']['album_url'].split('/')[-1]}
                 for song in response.json()['results'] if song['language'] in kwargs.get('lang')]
 
-    def select_song(self, arg: str, **kwargs):
+    def select_song(self, arg: str, **kwargs) -> str:
         self.song_download['url'] = arg  # Encrypted URL
         response = self.client.get(
             url=self.API_BASE, params=self.song_download | self.PARAMS_DEFAULT)
@@ -74,14 +74,14 @@ class JioSaavnSongProvider(ISongProvider):
         stream_url = self.client.get(url=auth_url, allow_redirects=False)
         return stream_url.headers['Location']
 
-    def _get_station_id(self, song_id: str):
+    def _get_station_id(self, song_id: str) -> str:
         self.entity_station['entity_id'] = f'["{song_id}"]'
         sid_response = self.client.get(
             url=self.API_BASE, params=self.entity_station | self.PARAMS_DEFAULT)
         sid = sid_response.json()['stationid']
         return sid
 
-    def _parse_recomm_songs(self, response: NetworkProviderResponseType):
+    def _parse_recomm_songs(self, response: NetworkProviderResponseType) -> SongListRawType:
         try:
             return [{'name': unescape(song['song']['title']),
                     'id': song['song']['id'],
