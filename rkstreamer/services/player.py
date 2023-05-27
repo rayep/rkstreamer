@@ -8,7 +8,7 @@ from vlc import Instance, MediaListPlayer, MediaList, State, MediaPlayer, Media
 from rkstreamer.interfaces.player import MusicPlayer, MusicPlayerControls
 
 
-class PyVlcPlayerInstance(MusicPlayer):
+class PyVLCPlayerInstance(MusicPlayer):
     """VLC Player implementation"""
 
     def __init__(self) -> None:
@@ -65,14 +65,14 @@ class PyVlcPlayerInstance(MusicPlayer):
         return self.player.get_media_player()
 
 
-class PyVlcPlayer(MusicPlayerControls):
+class PyVLCPlayer(MusicPlayerControls):
     """Handler for Player Controls"""
 
     def __init__(
             self,
-            mlplayer_factory: Optional[PyVlcPlayerInstance] = None) -> None:
+            mlplayer_factory: Optional[PyVLCPlayerInstance] = None) -> None:
 
-        self.mlplayer_factory = mlplayer_factory if mlplayer_factory else PyVlcPlayerInstance()
+        self.mlplayer_factory = mlplayer_factory if mlplayer_factory else PyVLCPlayerInstance()
         self.mlplayer_controls = MediaListPlayerControls(self.mlplayer_factory.player)
         self.mplayer_controls = MediaPlayerControls(self.mlplayer_factory.get_media_player)
         # Media List player will invoke MediaPlayerControls and pass it other controls.

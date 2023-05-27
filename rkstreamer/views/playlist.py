@@ -7,7 +7,7 @@ from rkstreamer.views.song import JioSaavnSongView
 
 
 class JioSaavnPlaylistView(JioSaavnSongView):
-    """Jio Saavn Album view"""
+    """Jio Saavn Playlist view"""
 
     def __init__(self, player: MusicPlayerControlsType) -> None:
         self.player = player

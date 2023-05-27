@@ -1,6 +1,6 @@
 """Tests: Playlists"""
 
-from rkstreamer.services.player import PyVlcPlayer
+from rkstreamer.services.player import PyVLCPlayer
 from rkstreamer.controllers.playlist import JioSaavnPlaylistController
 from rkstreamer.models.playlist import JioSaavnPlaylistModel
 from rkstreamer.views.playlist import JioSaavnPlaylistView
@@ -11,7 +11,7 @@ pyrequests = PyRequests(proxy=None)
 
 test = JioSaavnPlaylistController(
     model=JioSaavnPlaylistModel(pyrequests),
-    view=JioSaavnPlaylistView(player=PyVlcPlayer()))
+    view=JioSaavnPlaylistView(player=PyVLCPlayer()))
 
 while True:
     user_input = input("Enter the playlist name: ")

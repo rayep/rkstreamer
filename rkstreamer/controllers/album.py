@@ -21,7 +21,7 @@ from rkstreamer.types import (
 
 
 class JioSaavnAlbumController(ControllerUtils):
-    """Jio Saavn Controller"""
+    """Album Controller implemented for Jio Saavn model"""
 
     def __init__(self, model: AlbumModelType, view: AlbumViewType) -> None:
         self.model = model
@@ -71,10 +71,13 @@ class AlbumSearchCommand(Command):
 
     def execute(self, user_input: str):
         match_input = re.match(ALBUM_PATTERN, user_input)
-        album = match_input.group('album').strip()
-        match_input.groupdict().pop('album')
-        search_results = self.model.search(album, **match_input.groupdict())
-        self.view.display(search_results)
+        if match_input:
+            album = match_input.group('album').strip()
+            match_input.groupdict().pop('album')
+            search_results = self.model.search(album, **match_input.groupdict())
+            self.view.display(search_results)
+        else:
+            print("Invalid Input provided!")
 
 
 class AlbumSelectCommand(Command):

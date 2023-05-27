@@ -101,7 +101,8 @@ class JioSaavnAlbumModel(IAlbumModel):
         """Gets recommended songs using song_id and updates the RQueue"""
         recomm_songs_raw: SongListRawType = self.song_provider.get_recomm_songs(
             data)
-        return self._create_recomm_song(recomm_songs_raw)
+        if recomm_songs_raw:
+            return self._create_recomm_song(recomm_songs_raw)
 
     def get_song_url(self, data: str) -> str:
         """Get the song's stream url using Enc Url Token - used for rsongs download"""

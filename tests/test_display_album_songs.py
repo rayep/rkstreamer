@@ -1,6 +1,6 @@
 """Tests: Display album songs"""
 
-from rkstreamer.services.player import PyVlcPlayer
+from rkstreamer.services.player import PyVLCPlayer
 from rkstreamer.controllers.album import JioSaavnAlbumController
 from rkstreamer.models.album import JioSaavnAlbumModel
 from rkstreamer.views.album import JioSaavnAlbumView
@@ -11,7 +11,7 @@ pyrequests = PyRequests(proxy=None)
 
 test = JioSaavnAlbumController(
     model=JioSaavnAlbumModel(pyrequests),
-    view=JioSaavnAlbumView(player=PyVlcPlayer()))
+    view=JioSaavnAlbumView(player=PyVLCPlayer()))
 
 while True:
     user_input = input("Enter the album name: ")

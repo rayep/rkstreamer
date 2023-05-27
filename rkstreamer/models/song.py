@@ -53,7 +53,7 @@ class JioSaavnSongModel(ISongModel):
         return recomm_songs
 
     def _create_search_song_index(self, songs: SongListRawType) -> SongSearchIndexType:
-        self.indexed_search_songs = {count: self._create_search_song(**song) 
+        self.indexed_search_songs = {count: self._create_search_song(**song)
                                      for count, song in enumerate(songs, 1)}
         return self.indexed_search_songs
 
@@ -84,7 +84,8 @@ class JioSaavnSongModel(ISongModel):
         """Gets recommended songs using song_id and updates the RQueue"""
         recomm_songs_raw: SongListRawType = self.stream_provider.get_recomm_songs(
             data)
-        return self._create_recomm_song(recomm_songs_raw)
+        if recomm_songs_raw:
+            return self._create_recomm_song(recomm_songs_raw)
 
 
 class JioSaavnSongQueue(ISongQueue):

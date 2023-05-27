@@ -1,12 +1,21 @@
-"""Tests: Display songs"""
+"""
+RK Streamer v1.0.0
 
-from rkstreamer.services.player import PyVlcPlayer
+A command-line music player that allows you to play/stream songs, albums, playlists.
+
+Author: Ray A.
+Email: ray@raysecure.ml
+
+(c) 2023 Ray A. All rights reserved.
+
+License:
+This project is licensed under the terms of the MIT License.
+See the LICENSE file for more information.
+"""
+
+from rkstreamer.state import State, StateMachine
+from rkstreamer.services.player import PyVLCPlayer
 from rkstreamer.services.network import PyRequests
-from rkstreamer.controllers import (
-    JioSaavnSongController,
-    JioSaavnAlbumController,
-    JioSaavnPlaylistController
-)
 from rkstreamer.models import (
     JioSaavnSongModel,
     JioSaavnAlbumModel,
@@ -17,47 +26,29 @@ from rkstreamer.views import (
     JioSaavnAlbumView,
     JioSaavnPlaylistView
 )
+from rkstreamer.controllers import (
+    JioSaavnSongController,
+    JioSaavnAlbumController,
+    JioSaavnPlaylistController
+)
 
-
-proxy = {'https': 'http://127.0.0.1:8888'}
+# proxy = {'https': 'http://127.0.0.1:8888'}
 pyrequests = PyRequests(proxy=None)
 
 song_controller = JioSaavnSongController(
     model=JioSaavnSongModel(pyrequests),
-    view=JioSaavnSongView(player=PyVlcPlayer())
+    view=JioSaavnSongView(player=PyVLCPlayer())
 )
 
 album_controller = JioSaavnAlbumController(
     model=JioSaavnAlbumModel(pyrequests),
-    view=JioSaavnAlbumView(player=PyVlcPlayer())
+    view=JioSaavnAlbumView(player=PyVLCPlayer())
 )
 
 plist_controller = JioSaavnPlaylistController(
     model=JioSaavnPlaylistModel(pyrequests),
-    view=JioSaavnPlaylistView(player=PyVlcPlayer())
+    view=JioSaavnPlaylistView(player=PyVLCPlayer())
 )
-
-print(r"""
-
-*** RK Streamer ***
-
-@Powered by Jio Saavn
-
-""")
-
-
-class State:
-    """State class"""
-
-    def __init__(self, name, prompt, controller):
-        self.name = name
-        self.prompt = prompt
-        self.controller = controller
-
-    def handle_input(self, user_input):
-        """Handle user input"""
-        self.controller.handle_input(user_input)
-
 
 song = State(
     "song",
@@ -77,31 +68,16 @@ playlist = State(
     plist_controller
 )
 
+print(r"""
 
-class StateMachine:
-    """State machine"""
+*** RK Streamer ***
 
-    def __init__(self):
-        self.states = {'song': song, 'album': album, 'plist': playlist}
-        self.current_state = song
-        self.current_state_name = 'song'
+@Powered by Jio Saavn
 
-    def trigger(self):
-        """Triggers the state change or handle current state"""
-        while True:
-            user_input = input(self.current_state.prompt)
-            if user_input.lower().startswith('-e'):
-                raise SystemExit('Tata!')
-            elif user_input.startswith("--"):
-                state_name = user_input[2:]
-                if (state_name != self.current_state_name) and (state_name in self.states):
-                    self.current_state.controller.view.stop() # stop player when switching mode.
-                    self.current_state = self.states[state_name]
-                    self.current_state_name = state_name
-            else:
-                if user_input:
-                    self.current_state.handle_input(user_input)
+""")
 
 
-machine = StateMachine()
-machine.trigger()
+streamer = StateMachine()
+streamer.add_state({'song': song, 'album': album, 'plist': playlist})
+streamer.set_start_state('song')
+streamer.trigger()

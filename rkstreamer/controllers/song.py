@@ -5,7 +5,7 @@ from typing import Union
 from rkstreamer.interfaces.patterns import Command
 from rkstreamer.controllers.enums import ControllerEnum
 from rkstreamer.controllers.queue import SongQueueCommand, ReSongQueueCommand
-from rkstreamer.controllers.patterns import(
+from rkstreamer.controllers.patterns import (
     ControllerUtils,
     PlayerControlsCommand,
     GotoAlbumCommand
@@ -27,7 +27,8 @@ class JioSaavnSongController(ControllerUtils):
     def __init__(self, model: SongModelType, view: SongViewType) -> None:
         self.model = model
         self.view = view
-        self.goto_album = JioSaavnAlbumModel(network_provider=model.network_provider)
+        self.goto_album = JioSaavnAlbumModel(
+            network_provider=model.network_provider)
         self.commands = {
             ControllerEnum.QUEUE: SongQueueCommand(self),
             ControllerEnum.CONTROLS: PlayerControlsCommand(self),
@@ -64,10 +65,13 @@ class SongSearchCommand(Command):
 
     def execute(self, user_input: str):
         match_input = re.match(SONG_PATTERN, user_input)
-        song = match_input.group('song').strip()
-        match_input.groupdict().pop('song')
-        search_results = self.model.search(song, **match_input.groupdict())
-        self.view.display(search_results)
+        if match_input:
+            song = match_input.group('song').strip()
+            match_input.groupdict().pop('song')
+            search_results = self.model.search(song, **match_input.groupdict())
+            self.view.display(search_results)
+        else:
+            print("Invalid Input provided!")
 
 
 class SongSelectCommand(Command):

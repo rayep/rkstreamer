@@ -18,7 +18,7 @@ from rkstreamer.types import (
 
 
 class JioSaavnPlaylistController(IController):
-    """Song Controller implemented for Jio Saavn model"""
+    """Playlist Controller implemented for Jio Saavn model"""
 
     def __init__(self, model: PlaylistModelType, view: PlaylistViewType) -> None:
         self.model = model
