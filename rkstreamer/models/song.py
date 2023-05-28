@@ -234,8 +234,8 @@ class JioSaavnSongQueue(ISongQueue):
         try:
             rsong = self.rsongs_list.pop(index)
             return rsong
-        except IndexError:
-            print("Invalid RS Index!")
+        except (IndexError,KeyError):
+            raise GetMediaError("Failed to get song from RS Queue") from None
         return None
 
     def remove_rsong_index(self, index: int) -> Optional[SongType]:
@@ -244,8 +244,8 @@ class JioSaavnSongQueue(ISongQueue):
             rsong = self.rsongs_list.pop(index)
             if rsong:
                 print(f"\n\033[33mRemoved: '{rsong.name}'\033[0m")
-        except IndexError:
-            print("Invalid RS Index!")
+        except (IndexError,KeyError):
+            raise RemoveMediaError("Failed to remove song from RS Queue") from None
 
     @property
     def get_rsongs(self) -> SongIndexType:
