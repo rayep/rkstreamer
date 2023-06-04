@@ -25,4 +25,4 @@ rkstreamer = "rkstreamer.__main__:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "rkstreamer.__version__"}
-readme = {file = "README.md"}
+readme = {file = "README.md", content-type = "text/markdown; charset=UTF-8; variant=GFM"}
