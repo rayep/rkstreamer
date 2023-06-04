@@ -33,13 +33,13 @@ or
 - Default mode is 'Song Search' Mode.
 - Modes can be switched using **--album, --plist**.
 - Supports search parameters for Songs, Albums -> 'search string' -n:number, -l:language, -b:bitrate.
-- **-q, -r, -g** displays Song Queue, Recommended Songs, Go-to-Album modes.
+- **-q, -r, -g** switch displays Song Queue, Recommended Songs, Go-to-Album modes.
 - **a, p, r** followed by the song index can be used to Add, Play, Remove songs from the corresponding queues.
 
 ---
 #### Controls
 
-- **-c** used to control the player and media playback; supports volume, playback, audio output controls.
+- **-c** switch control the player and media playback; supports volume, playback, audio output controls.
 - Player control actions should be suffixed with the '-c' switch such as **-cp** - play/pause, **-cs** - stop, **-cn** - next song, **-cpr** - previous song.
 - Volume controls: **v** - display current volume, **+(number)** - volume increase, **-(number)** - volume decrease.
 - Playback controls: **>(seconds)** - seek forward, **<(seconds)** - seek backward, **t** - show remaining time.
