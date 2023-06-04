@@ -16,8 +16,8 @@ class JioSaavnAlbumView(JioSaavnSongView):
     def display(self, entity) -> None:
         print('\n\033[33m\033[01m***Albums Search***\033[0m\n')
         for count, album in entity.items():
-            print(f"{count}- {album.name}")
-            print(f"Artists - {album.artists}")
+            print(f"{count}- {album.name} ({album.language})")
+            print(f"Music - {album.artists}")
             print(f"Song Count - {album.song_count}")
             print()
 
@@ -26,5 +26,5 @@ class JioSaavnAlbumView(JioSaavnSongView):
         print('\n\033[33m\033[01m***Albums Songs***\033[0m\n')
         for count, song in entity.songs.items():
             print(f"A{count}- {song.name}")
-            print(f"Music - {song.artists}")
+            print(f"Artists - {song.artists}")
             print()

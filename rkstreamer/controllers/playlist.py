@@ -7,7 +7,7 @@ from rkstreamer.interfaces.controllers import IController
 from rkstreamer.controllers.enums import ControllerEnum
 from rkstreamer.controllers.patterns import PlayerControlsCommand
 from rkstreamer.controllers.queue import SongQueueCommand
-from rkstreamer.utils.helper import parse_input
+from rkstreamer.utils.helper import parse_input, PLIST_PATTERN
 from rkstreamer.types import (
     PlaylistModelType,
     PlaylistViewType,
@@ -65,8 +65,12 @@ class JioSaavnPlaylistController(IController):
         self.uow_add_songs_queue(playlist)
         self.view.play()
 
-    def uow_play_songs_remove_loaded(self, song: SongType):
-        """UOW: (override) play the media"""
+    def uow_play_songs_remove_loaded_before(self, song: SongType):
+        """UOW: plays the song from song queue - playlist mode so don't change the played status
+        of other songs.
+        
+        name of the function has to be kept as it is
+        because it's being called by SongQueueCommand."""
         self.view.play_media(song)
 
 
@@ -92,8 +96,16 @@ class PlaylistSearchCommand(Command):
         self.view: PlaylistViewType = self.controller.view
 
     def execute(self, user_input: str):
-        search_results = self.model.search(user_input)
-        self.view.display(search_results)
+        match_input = re.match(PLIST_PATTERN, user_input)
+        if match_input:
+            plist = match_input.group('plist').strip()
+            match_input.groupdict().pop('plist')
+            search_results = self.model.search(plist, **match_input.groupdict())
+            self.view.display(search_results)
+        else:
+            print("Invalid Input provided!")
+        # search_results = self.model.search(user_input)
+        # self.view.display(search_results)
 
 
 class PlaylistViewCommand(Command):

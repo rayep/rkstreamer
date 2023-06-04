@@ -182,7 +182,7 @@ class ReSongQueueRemoveCommand(Command):
 
 
 class ReSongQueuePlayCommand(Command):
-    """Song Queue - Play command"""
+    """RS Queue - Play command"""
 
     def __init__(self, controller: SongControllerType):
         self.controller = controller

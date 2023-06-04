@@ -7,6 +7,7 @@ from html import unescape
 from urllib.parse import quote_plus
 from urllib3 import disable_warnings
 from rkstreamer.interfaces.provider import ISongProvider
+from rkstreamer.utils.helper import LANGUAGES
 from rkstreamer.types import (
     SongListRawType,
     NetworkProviderType,
@@ -45,7 +46,7 @@ class JioSaavnSongProvider(ISongProvider):
         self.song_download['bitrate'] = kwargs.get('bitrate') or 320
         language = [kwargs.get('lang'),] \
             if kwargs.get('lang') \
-            else ['tamil', 'english', 'hindi', 'telugu', 'kannada', 'spanish', 'latin']
+            else LANGUAGES
         response = self.client.get(
             url=self.API_BASE, params=self.song_search | self.PARAMS_DEFAULT)
         return self._parse_songs(response, lang=language)
@@ -57,6 +58,7 @@ class JioSaavnSongProvider(ISongProvider):
                  'album_name': unescape(song['more_info']['album']),
                  'music': song['more_info']['music'][:50] if song['more_info']['music'] else '',
                  'artists': unescape(song['subtitle'].replace(f" - {song['more_info']['album']}", '')),
+                 'language': song['language'],
                  'duration': song['more_info']['duration'],
                  'token': song['more_info']['encrypted_media_url'],
                  'album_id': song['more_info']['album_url'].split('/')[-1]}

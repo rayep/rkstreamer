@@ -5,9 +5,9 @@ Playlist provider - API
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from html import unescape
-from urllib.parse import quote_plus
 from urllib3 import disable_warnings
 from rkstreamer.interfaces.provider import IPlaylistProvider
+from rkstreamer.utils.helper import LANGUAGES
 
 if TYPE_CHECKING:
     from rkstreamer.types import (
@@ -43,7 +43,7 @@ class JioSaavnPlaylistProvider(IPlaylistProvider):
         self.plist_search['q'] = search_string
         language = [kwargs.get('lang'),] \
             if kwargs.get('lang') \
-            else ['tamil', 'english']
+            else LANGUAGES
         plist_request = self.client.get(
             url=self.API_BASE, params=self.plist_search | self.PARAMS_DEFAULT)
         return self._parse_playlist(plist_request, lang=language)
@@ -52,6 +52,7 @@ class JioSaavnPlaylistProvider(IPlaylistProvider):
         """Parse playlist response"""
         return [{'name': plist['title'],
                 'token': plist['perma_url'].split('/')[-1],
+                'language': plist['more_info']['language'],
                  'song_count': plist['more_info']['song_count']}
                 for plist in response.json()['results']
                 if plist['more_info']['language'] in kwargs.get('lang')]

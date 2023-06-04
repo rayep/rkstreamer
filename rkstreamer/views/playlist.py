@@ -16,7 +16,7 @@ class JioSaavnPlaylistView(JioSaavnSongView):
     def display(self, entity) -> None:
         print('\n\033[33m\033[01m***Playlist Search***\033[0m\n')
         for count, playlist in entity.items():
-            print(f"{count}- {playlist.name}")
+            print(f"{count}- {playlist.name} ({playlist.language})")
             print(f"Song Count - {playlist.song_count}")
             print()
 

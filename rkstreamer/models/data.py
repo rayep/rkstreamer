@@ -19,6 +19,7 @@ class SongSearch(SongBase):
     """Song Search model'"""
     status: str = field(hash=False, compare=False, default='Fetched', repr=False)
     token: str = field(hash=False, compare=False, default=None, repr=False)
+    language: str = field(hash=False, compare=False, default=None, repr=False)
 
 
 @dataclass(unsafe_hash=True)
@@ -45,6 +46,7 @@ class AlbumBase():
 class AlbumSearch(AlbumBase):
     """Album search model"""
     song_count: int = field(hash=False, default=None)
+    language: str = field(hash=False, compare=False, default=None, repr=False)
 
 @dataclass
 class Album(AlbumSearch):
@@ -62,6 +64,7 @@ class PlaylistSearch(PlaylistBase):
     """Playlist search model"""
     token: str = field(default=None, repr=False)
     song_count: int = field(default=None)
+    language: str = field(hash=False, compare=False, default=None, repr=False)
 
 
 @dataclass

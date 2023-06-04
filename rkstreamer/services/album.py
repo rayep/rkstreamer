@@ -6,6 +6,7 @@ from html import unescape
 from urllib.parse import quote_plus
 from urllib3 import disable_warnings
 from rkstreamer.interfaces.provider import IAlbumProvider
+from rkstreamer.utils.helper import LANGUAGES
 from rkstreamer.types import (
     AlbumRawType,
     AlbumListRawType,
@@ -36,7 +37,7 @@ class JioSaavnAlbumProvider(IAlbumProvider):
         self.album_search['n'] = kwargs.get('num') or 3
         language = [kwargs.get('lang'),] \
             if kwargs.get('lang') \
-            else ['tamil', 'english', 'hindi', 'telugu', 'kannada', 'spanish', 'latin']
+            else LANGUAGES
         response = self.client.get(
             url=self.API_BASE, params=self.album_search | self.PARAMS_DEFAULT)
         return self._parse_albums(response, lang=language)
@@ -46,6 +47,7 @@ class JioSaavnAlbumProvider(IAlbumProvider):
                 'id': album['perma_url'].split('/')[-1],
                  'music': album['more_info']['music'][:50] if album['more_info']['music'] else '',
                  'artists': unescape(album['subtitle']),
+                 'language': album['language'],
                  'song_count': album['more_info']['song_count']}
                 for album in response.json()['results'] if album['language'] in kwargs.get('lang')]
 

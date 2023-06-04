@@ -22,7 +22,7 @@ class JioSaavnSongView(ISongView):
     def display(self, entity: SongSearchIndexType) -> None:
         print('\n\033[33m\033[01m***Songs Search***\033[0m\n')
         for count, song in entity.items():
-            print(f"{count}- {song.name}")
+            print(f"{count}- {song.name} ({song.language})")
             print(f"Album - {song.album_name}")
             print(f"Artists - {song.artists}")
             print()
