@@ -1,8 +1,17 @@
 ### RK Music Streamer
 
-A command-line music player that allows you to play/stream songs, albums, playlists.
-Powered by Jio Saavn Web APIs.
+A command-line music player that allows you to play/stream songs, albums, playlists. <br>
+**Powered by Jio Saavn Web APIs**
 
+---
+#### Prerequisites
+- Python 3.9.x or above.
+- VLC player must be installed. This application uses the VLC player from streaming and python-vlc bindings for interaction. <br>
+(Install from [VLC](https://www.videolan.org/vlc/))
+
+#### Dependencies
+- [requests](https://pypi.org/project/requests/)
+- [python-vlc](https://pypi.org/project/python-vlc/)
 ---
 ##### Installation
 ```
@@ -22,10 +31,14 @@ or
 ---
 ##### Usage
 - Default mode is 'Song Search' Mode.
-- Modes can be switched using --album, --plist.
+- Modes can be switched using **--album, --plist**.
 - Supports search parameters for Songs, Albums -> 'search string' -n:number, -l:language, -b:bitrate.
-- -q, -r, -g displays Song Queue, Recommended Songs, Go-to-Album modes.
-- a, p, r followed by the song index can be used to Add, Play, Remove songs from the corresponding queues.
+- **-q, -r, -g** displays Song Queue, Recommended Songs, Go-to-Album modes.
+- **a, p, r** followed by the song index can be used to Add, Play, Remove songs from the corresponding queues.
+- **-c** used to control the player and media playback; supports volume, playback, output controls.
+- Player control actions should be suffixed with the '-c' switch such as -cp - play, -cs - stop, -cn - next song, -cpr - previous song.
+- Volume controls: v - display current volume, +number - volume increase, -number - volume decrease.
+- Playback controls: >seconds - seek forward, <seconds - seek backward, t - shows remaining time.
 
 ---
 ##### Examples
@@ -48,3 +61,6 @@ or
 
 Similar behaviors for -r (recommended songs), -g (go-to-album).
 Correct prefix and actions should be used such as -rr1, -ga1, etc.
+
+```
+
