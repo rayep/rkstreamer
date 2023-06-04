@@ -1,12 +1,12 @@
 ### RK Music Streamer
 
-A command-line music player that allows you to play/stream songs, albums, playlists. <br>
+A command-line music player that allows you to stream songs, albums, playlists. <br>
 **Powered by Jio Saavn Web APIs**
 
 ---
 #### Prerequisites
 - Python 3.9.x or above.
-- VLC player must be installed. This application uses the VLC player from streaming and python-vlc bindings for interaction. <br>
+- VLC player must be installed. This application uses the VLC player for streaming and python-vlc bindings for interaction. <br>
 (Install from [VLC](https://www.videolan.org/vlc/))
 
 #### Dependencies
@@ -36,9 +36,9 @@ or
 - **-q, -r, -g** displays Song Queue, Recommended Songs, Go-to-Album modes.
 - **a, p, r** followed by the song index can be used to Add, Play, Remove songs from the corresponding queues.
 - **-c** used to control the player and media playback; supports volume, playback, output controls.
-- Player control actions should be suffixed with the '-c' switch such as -cp - play, -cs - stop, -cn - next song, -cpr - previous song.
-- Volume controls: v - display current volume, +number - volume increase, -number - volume decrease.
-- Playback controls: >seconds - seek forward, <seconds - seek backward, t - shows remaining time.
+- Player control actions should be suffixed with the '-c' switch such as **-cp** - play/pause, **-cs** - stop, **-cn** - next song, **-cpr** - previous song.
+- Volume controls: **v** - display current volume, **+number** - volume increase, **-number** - volume decrease.
+- Playback controls: **>seconds** - seek forward, **<seconds** - seek backward, **t** - show remaining time.
 
 ---
 ##### Examples
