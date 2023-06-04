@@ -1,7 +1,7 @@
 ### RK Music Streamer
 
 A command-line music streamer that allows you to stream songs, albums, playlists. <br>
-**Powered by Jio Saavn Web APIs**
+**Powered by [Jio Saavn](https://www.jiosaavn.com) Web APIs**
 
 ---
 #### Prerequisites
@@ -35,10 +35,11 @@ or
 - Supports search parameters for Songs, Albums -> 'search string' -n:number, -l:language, -b:bitrate.
 - **-q, -r, -g** displays Song Queue, Recommended Songs, Go-to-Album modes.
 - **a, p, r** followed by the song index can be used to Add, Play, Remove songs from the corresponding queues.
-- **-c** used to control the player and media playback; supports volume, playback, output controls.
+- **-c** used to control the player and media playback; supports volume, playback, audio output controls.
 - Player control actions should be suffixed with the '-c' switch such as **-cp** - play/pause, **-cs** - stop, **-cn** - next song, **-cpr** - previous song.
 - Volume controls: **v** - display current volume, **+number** - volume increase, **-number** - volume decrease.
 - Playback controls: **>seconds** - seek forward, **<seconds** - seek backward, **t** - show remaining time.
+- Audio output controls: **lo** - list output device, **co<index>** - change output to index.
 
 ---
 ##### Examples
