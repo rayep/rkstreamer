@@ -1,6 +1,6 @@
 ### RK Music Streamer
 
-A command-line music player that allows you to stream songs, albums, playlists. <br>
+A command-line music streamer that allows you to stream songs, albums, playlists. <br>
 **Powered by Jio Saavn Web APIs**
 
 ---
