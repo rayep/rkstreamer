@@ -66,6 +66,11 @@ or
 
 Similar behaviors for -r (recommended songs), -g (go-to-album).
 Correct prefix and actions should be used such as -rr1, -ga1, etc.
+
+Album search can be selected using the index number and songs can be played using a(index) i.e., 
+1 - to select the album from search list.
+a1 - to play the album's 1st song.
+-qa3 - add 3rd song in the selected album to song queue.
   
 Volume Controls:
   -cv - Shows current volume
