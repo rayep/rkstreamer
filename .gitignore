@@ -3,3 +3,4 @@
 *.whl
 rkstreamer.*
 build/*
+dist/*
