@@ -1,5 +1,5 @@
 """
-RK Streamer v1.2.1
+RK Streamer v1.2.2
 
 A command-line music player that allows you to play/stream songs, albums, playlists.
 

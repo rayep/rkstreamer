@@ -4,7 +4,7 @@ Songs Provider API
 
 import random
 from html import unescape
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlencode
 from urllib3 import disable_warnings
 from rkstreamer.interfaces.provider import ISongProvider
 from rkstreamer.utils.helper import LANGUAGES
@@ -48,7 +48,7 @@ class JioSaavnSongProvider(ISongProvider):
             if kwargs.get('lang') \
             else LANGUAGES
         response = self.client.get(
-            url=self.API_BASE, params=self.song_search | self.PARAMS_DEFAULT)
+            url=f"{self.API_BASE}?{urlencode(self.song_search|self.PARAMS_DEFAULT, safe='+')}")
         return self._parse_songs(response, lang=language)
 
     def _parse_songs(self, response: NetworkProviderResponseType, **kwargs) -> SongListRawType:
@@ -104,5 +104,4 @@ class JioSaavnSongProvider(ISongProvider):
         self.recomm_songs['k'] = kwargs.get('rsongs') or random.randint(10, 15)
         recomm_songs = self.client.get(
             url=self.API_BASE, params=self.recomm_songs | self.PARAMS_DEFAULT)
-        print()
         return self._parse_recomm_songs(recomm_songs)

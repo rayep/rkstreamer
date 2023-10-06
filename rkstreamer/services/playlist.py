@@ -5,6 +5,7 @@ Playlist provider - API
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from html import unescape
+from urllib.parse import urlencode
 from urllib3 import disable_warnings
 from rkstreamer.interfaces.provider import IPlaylistProvider
 from rkstreamer.utils.helper import LANGUAGES
@@ -45,7 +46,7 @@ class JioSaavnPlaylistProvider(IPlaylistProvider):
             if kwargs.get('lang') \
             else LANGUAGES
         plist_request = self.client.get(
-            url=self.API_BASE, params=self.plist_search | self.PARAMS_DEFAULT)
+            url=f"{self.API_BASE}?{urlencode(self.plist_search|self.PARAMS_DEFAULT, safe='+')}")
         return self._parse_playlist(plist_request, lang=language)
 
     def _parse_playlist(self, response: NetworkProviderResponseType, **kwargs) -> PListRawType:

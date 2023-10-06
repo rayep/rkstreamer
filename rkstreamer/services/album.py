@@ -3,7 +3,7 @@ Albums provider - API
 """
 
 from html import unescape
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlencode
 from urllib3 import disable_warnings
 from rkstreamer.interfaces.provider import IAlbumProvider
 from rkstreamer.utils.helper import LANGUAGES
@@ -39,7 +39,7 @@ class JioSaavnAlbumProvider(IAlbumProvider):
             if kwargs.get('lang') \
             else LANGUAGES
         response = self.client.get(
-            url=self.API_BASE, params=self.album_search | self.PARAMS_DEFAULT)
+            url=f"{self.API_BASE}?{urlencode(self.album_search|self.PARAMS_DEFAULT, safe='+')}")
         return self._parse_albums(response, lang=language)
 
     def _parse_albums(self, response: NetworkProviderResponseType, **kwargs) -> AlbumListRawType:
