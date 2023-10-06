@@ -4,3 +4,4 @@
 rkstreamer.*
 build/*
 dist/*
+*.txt
