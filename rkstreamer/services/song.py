@@ -80,7 +80,7 @@ class JioSaavnSongProvider(ISongProvider):
         self.entity_station['entity_id'] = f'["{song_id}"]'
         sid_response = self.client.get(
             url=self.API_BASE, params=self.entity_station | self.PARAMS_DEFAULT)
-        sid = sid_response.json()['stationid']
+        sid = sid_response.json()['stationid'] if sid_response.json() else ''
         return sid
 
     def _parse_recomm_songs(self, response: NetworkProviderResponseType) -> SongListRawType:
@@ -93,13 +93,15 @@ class JioSaavnSongProvider(ISongProvider):
                      'duration': song['song']['more_info']['duration'],
                      'token': song['song']['more_info']['encrypted_media_url'],
                      'album_id': song['song']['more_info']['album_url'].split('/')[-1]}
-                    for key, song in response.json().items() if key != 'stationid']
+                    for key, song in response.json().items() if key != 'stationid'] if response.json() else [] # return empty array if no recomm songs returned
         except (KeyError, IndexError, TypeError):
             print("Get Rsongs failed")
 
     def get_recomm_songs(self, song_id: str, **kwargs) -> SongListRawType:
         """Get recommended songs from song_id"""
         station_id = self._get_station_id(song_id)
+        if not station_id:
+            return []
         self.recomm_songs['stationid'] = station_id
         self.recomm_songs['k'] = kwargs.get('rsongs') or random.randint(10, 15)
         recomm_songs = self.client.get(
