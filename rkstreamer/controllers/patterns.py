@@ -34,7 +34,7 @@ class ControllerUtils(ISongController):
         self.view.set_controller_callback(self.uow_update_song_status)
 
         _ = threading.Timer(30, self.monitor_queue_pull_rsong)
-        _.setDaemon(True)
+        _.daemon = True #Changed to supported daemon method
         _.start()
 
     def uow_update_song_status(self, status: str, stream_url: str):
